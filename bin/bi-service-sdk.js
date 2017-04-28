@@ -23,12 +23,16 @@ var builder = {
         var self     = this;
         var package  = require(argv.s + '/package.json');
         var specs    = self.getSwaggerSpecs(argv.s, argv.e, argv._);
+        //tmp dir used to build the sdks
         var tmpDir   = tmp.dirSync({
             unsafeCleanup: true,
             keep: argv.cleanup ? false : true
         });
+        //builded sdk npm pckgs
         var packages = [];
 
+        //for each app - build sdk npm package with http API versions bundled in
+        //separate files
         Object.keys(specs).forEach(function(appName) {
             var files = [];
             var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
@@ -81,6 +85,8 @@ var builder = {
             });
         });
 
+        // verify integrity of SDKs (tests) and bundle each created npm package
+        // in separate zip file -> export to cwd
         return Promise.each(packages, function(package) {
             if (!argv.tests) {
                 return;
