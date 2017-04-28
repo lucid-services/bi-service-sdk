@@ -1,0 +1,86 @@
+'use strict';
+
+var ServiceSDK = module.require('bi-service-sdk').BIServiceSDK;
+
+module.exports = {{{moduleName}}};
+
+
+/**
+ * @constructor
+ * @name {{{moduleName}}}
+ */
+function {{{moduleName}}}(options) {
+    options = options || {};
+
+    if (!options.baseURL) {
+        options.baseURL = "{{{host}}}";
+    }
+
+    ServiceSDK.call(this, options);
+    this.options.baseURL += "{{{basePath}}}";
+}
+
+{{{moduleName}}}.prototype = Object.create(ServiceSDK.prototype);
+{{{moduleName}}}.prototype.constructor = {{{moduleName}}};
+
+{{#paths}}
+/**
+ * @method
+ * @name {{{moduleName}}}#{{{sdkMethodName}}}
+ * @operationId {{{operationId}}}
+ * @summary {{{summary}}}
+{{#routeDesc}}
+ *
+ * @description {{{routeDesc}}}
+ {{/routeDesc}}
+ *
+{{#pathParams}}
+ * @param {{openbrace}}{{type}}{{closebrace}} [{{name}}]{{#description}} - {{{description}}}{{/description}}
+{{/pathParams}}
+ * @param {Object} options
+ {{#hasBody}}
+ * @param {Object} options.data
+ {{#bodyParams}}
+ * @param {{openbrace}}{{type}}{{closebrace}} options.data.{{name}}{{#description}} - {{{description}}}{{/description}}
+ {{/bodyParams}}
+ {{/hasBody}}
+ * @param {Object} options.params
+ {{#queryParams}}
+ * @param {{openbrace}}{{type}}{{closebrace}} [options.params.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ {{/queryParams}}
+ * @param {Object} options.headers
+ {{#headerParams}}
+ * @param {{openbrace}}{{type}}{{closebrace}} [options.headers.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ {{/headerParams}}
+ * @param {Object} options.path
+ {{#pathParams}}
+ * @param {{openbrace}}{{type}}{{closebrace}} [options.path.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ {{/pathParams}}
+ *
+ */
+{{{moduleName}}}.prototype.{{{sdkMethodName}}} = function {{{sdkMethodName}}}({{methodPathArgs}}options) {
+    options = options || {};
+
+    var opt = {
+        url     : "{{{url}}}",
+        method  : "{{{method}}}",
+        {{#hasBody}}
+        data    : options.data,
+        {{/hasBody}}
+        params  : options.params,
+        headers : options.headers
+    };
+
+    {{#pathParams}}
+    {{name}} = {{name}} || (options.path && options.path[{{name}}]);
+
+    if (!{{name}}) {
+        return Promise.reject(new Error('"{{name}}" path segment parameter is required.'));
+    }
+
+    opt.url = opt.url.replace(/{{openbrace}}{{name}}{{closebrace}}/, {{name}});
+    {{/pathParams}}
+
+    return this.$request(opt);
+};
+{{/paths}}

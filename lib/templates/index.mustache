@@ -1,0 +1,5 @@
+'use strict';
+
+{{#versions}}
+module.exports["{{{.}}}"] = require('./{{{.}}}.js');
+{{/versions}}

@@ -1,0 +1,31 @@
+//package location $PACKAGE_ROOT/tests/{{{version}}}.js
+
+Promise            = require('bluebird');
+var sinon          = require('sinon');
+var chai           = require('chai');
+var chaiAsPromised = require('chai-as-promised');
+var sinonChai      = require("sinon-chai");
+var _              = require('lodash');
+var sdkInterface   = require('bi-service-sdk');
+
+var sdk = require('../{{{version}}}.js');
+
+
+//this makes sinon-as-promised available in sinon:
+require('sinon-as-promised');
+
+var expect = chai.expect;
+
+chai.use(sinonChai);
+chai.use(chaiAsPromised);
+chai.should();
+
+var context = {{{context}}};
+
+describe(context.moduleName, function() {
+
+    it('should export constructor object which inherits from BIServiceSDK interface', function() {
+        sdk.should.be.instanceof('function');
+        (new sdk).should.be.instanceof(sdkInterface.BIServiceSDK);
+    });
+});
