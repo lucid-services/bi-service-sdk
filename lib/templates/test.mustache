@@ -35,6 +35,10 @@ describe(context.moduleName, function() {
         (new sdk).should.be.instanceof(sdkInterface.BIServiceSDK);
     });
 
+    it(`should have "version" property equal to ${context.version}`, function() {
+        (new sdk).version.should.be.equal(context.version);
+    });
+
     describe('SDK methods', function() {
 
         beforeEach(function() {
