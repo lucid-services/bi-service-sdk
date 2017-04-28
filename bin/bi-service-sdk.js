@@ -13,28 +13,34 @@ var Promise      = require('bluebird');
 
 var builder = {
     /**
-     *
+     * @param {Object} argv - cli options
+     * @return Promise
      */
     main: function main(argv) {
+        if (argv.cleanup) {
+            tmp.setGracefulCleanup();
+        }
         var self     = this;
         var package  = require(argv.s + '/package.json');
         var specs    = self.getSwaggerSpecs(argv.s, argv.e, argv._);
-        var tmpDir   = tmp.dirSync();
+        var tmpDir   = tmp.dirSync({
+            unsafeCleanup: true,
+            keep: argv.cleanup ? false : true
+        });
         var packages = [];
 
         Object.keys(specs).forEach(function(appName) {
             var files = [];
             var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
-            var outputFileName = subdir + '.zip';
-            var buildedPackage = {dir: subdir, files: files};
+            var buildedPackage = {
+                dir: subdir,
+                filename: `${package.name}-${appName}-${package.version}.zip`,
+                files: files,
+            };
 
             packages.push(buildedPackage);
             fs.mkdirSync(subdir);
             fs.mkdirSync(subdir + '/tests');
-
-            //var output = fs.createWriteStream(process.cwd() + outputFileName, {
-                //flags: 'wx' //dont overwrite
-            //});
 
             var sdkIndex = self.renderTemplate('index', {
                 versions: Object.keys(specs[appName])
@@ -48,6 +54,15 @@ var builder = {
             fs.writeFileSync(subdir + '/index.js', sdkIndex);
             fs.writeFileSync(subdir + '/package.json', sdkPackage);
 
+            files.push({
+                dir: subdir,
+                name: 'index.js'
+            });
+            files.push({
+                dir: subdir,
+                name: 'package.json'
+            });
+
             Object.keys(specs[appName]).forEach(function(version) {
 
                 var spec = specs[appName][version];
@@ -59,28 +74,62 @@ var builder = {
                 self.lintSource(sdkModule);
                 fs.writeFileSync(subdir + `/${version}.js`, sdkModule);
                 fs.writeFileSync(subdir + `/tests/${version}.js`, sdkTests);
-                //files.push({
-                    //data: fs.createReadSteam(subdir + `/${version}.js`)
-                //});
+                files.push({
+                    dir: subdir,
+                    name: `${version}.js`
+                });
             });
         });
 
         return Promise.each(packages, function(package) {
-            return self.runNpmInstall(package.dir).then(function() {
-                self.runPackageTests(package.dir);
-            }).catch(function(err) {
-                console.error(err.message);
-                process.exit(1);
+            if (!argv.tests) {
+                return;
+            }
+
+            return self.runNpmInstall(package.dir, argv.v).then(function() {
+                return self.runPackageTests(package.dir, argv.v);
             });
+        }).map(function(package) {
+
+            if (argv.dry) {
+                return;
+            }
+
+            var zipFilePath = process.cwd() + '/' + package.filename;
+            var output = fs.createWriteStream(zipFilePath, {
+                flags: 'wx' //dont overwrite
+            });
+
+            if (argv.v >= 1) {
+                console.info(`Exporting ${zipFilePath}`);
+            }
+            return self.zipFiles(package.files, output);
+        }).then(function() {
+            if (argv.cleanup) {
+                tmpDir.removeCallback();
+            }
+            if (argv.v >= 1) {
+                console.info('Done.');
+            }
         });
     },
 
+    /**
+     * @param {Array<Object>} files
+     * @param {String}        files[].dir
+     * @param {String}        files[].name
+     * @param {Stream}        writeStream
+     *
+     * @return Promise
+     */
     zipFiles: function zipFiles(files, writeStream) {
         files = files || [];
 
         var archive  = archiver('zip', { zlib: { level: 9 } });
         files.forEach(function(file) {
-            archive.append(file.data, file.opt);
+            archive.append(fs.createReadStream(`${file.dir}/${file.name}`), {
+                name: file.name
+            });
         });
 
         return  new Promise(function(resolve, reject){
@@ -91,18 +140,43 @@ var builder = {
         });
     },
 
-    runNpmInstall: function runNpmInstall(projectRoot) {
+    /**
+     * @param {String} projectRoot
+     * @param {Integer} vLevel - verbosity level
+     *
+     * @return Promise
+     */
+    runNpmInstall: function runNpmInstall(projectRoot, vLevel) {
 
-        var proc = childProcess.spawn('npm', [
+        var npmArgs = [
             'install',
             'bluebird',
-            'bi-service-sdk'
-        ], {cwd: projectRoot});
+            'bi-service-sdk',
+            'sinon@^1.17.3',
+            'chai',
+            'chai-as-promised',
+            'sinon-as-promised',
+            'sinon-chai'
+        ];
+
+        if (vLevel >= 1) {
+            console.info(`${projectRoot} - preparing testing environment`);
+            console.info('npm ' + npmArgs.join(' '));
+        }
+        var proc = childProcess.spawn('npm', npmArgs, {cwd: projectRoot});
 
         return new Promise(function(resolve, reject) {
             var stderr = '';
+            proc.stdout.on('data', function(data) {
+                if (vLevel > 2) {
+                    console.info(data.toString());
+                }
+            });
             proc.stderr.on('data', function(data) {
                 stderr += data.toString();
+                if (vLevel > 2) {
+                    console.info(data.toString());
+                }
             });
             proc.on('close', function(code) {
                 if (code !== 0) {
@@ -114,12 +188,25 @@ var builder = {
         });
     },
 
-    runPackageTests: function runPackageTests(projectRoot) {
+    /**
+     * @param {String} projectRoot
+     * @param {Integer} vLevel - verbosity level
+     *
+     * @return Promise
+     */
+    runPackageTests: function runPackageTests(projectRoot, vLevel) {
+        var mochaArgs = ['--ui', 'bdd', '--colors', '--check-leaks', '-t', '5000',
+                '--reporter', 'spec', "tests/**/*.js"];
+
         var proc = childProcess.spawn('mocha',
-            ['--ui', 'bdd', '--colors', '--check-leaks', '-t', '5000',
-                '--reporter', 'spec', "tests/**/*.js"],
+            mochaArgs,
             {cwd: projectRoot}
         );
+
+        if (vLevel >= 1) {
+            console.info(`${projectRoot} - running tests`);
+            console.info('mocha ' + mochaArgs.join(' '));
+        }
 
         return new Promise(function(resolve, reject) {
             var stderr = '';
@@ -127,6 +214,9 @@ var builder = {
 
             proc.stdout.on('data', function(data) {
                 stdout += data.toString();
+                if (vLevel > 1) {
+                    console.info(data.toString());
+                }
             });
 
             proc.stderr.on('data', function(data) {
@@ -134,7 +224,7 @@ var builder = {
             });
             proc.on('close', function(code) {
                 if (code !== 0) {
-                    return reject(new Error(stderr));
+                    return reject(new Error(stdout ? stdout : stderr));
                 }
 
                 return resolve(stdout);
@@ -348,6 +438,7 @@ var builder = {
 
 module.exports = Object.create(builder);
 
+//run only if this module isn't required be other node module
 if (module.parent === null) {
 
     var argv = yargs
@@ -368,9 +459,37 @@ if (module.parent === null) {
         coerce: path.resolve,
         type: 'string'
     })
-    .example('$0 -s $PROJECTS/bi-depot -- --app public',
-        'Generates client sdk npm package for given app(s)')
-    .help('h', false).argv;
+    .option('tests', {
+        alias: 'test',
+        describe: 'Runs automated tests on builded SDKs',
+        default: true,
+        required: true,
+        type: 'boolean'
+    })
+    .option('dry', {
+        describe: 'Runs build without actually exporting any files',
+        default: false,
+        required: true,
+        type: 'boolean'
+    })
+    .option('cleanup', {
+        describe: 'Whether to cleanup tmp files created during the build',
+        default: true,
+        required: true,
+        type: 'boolean'
+    })
+    .option('verbose', {
+        alias: 'v',
+        describe: 'Dumps more info to stdout (eg. about tests | npm install)',
+        default: 1,
+        count: true,
+        type: 'boolean'
+    })
+    .example('> $0 -s $PROJECTS/bi-depot -- --app public',
+        'Generates client SDK npm package for given app(s)')
+    .example('> $0 --doc-exec ./node_modules/.bin/bi-service-doc',
+        'Generates client SDKs for each exported app of bi-service based project under current working dirrectory')
+    .help('h', false).wrap(yargs.terminalWidth()).argv;
 
     return module.exports.main(argv);
 }

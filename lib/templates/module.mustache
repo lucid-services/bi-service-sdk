@@ -56,28 +56,35 @@ function {{{moduleName}}}(options) {
  {{#pathParams}}
  * @param {{openbrace}}{{type}}{{closebrace}} [options.path.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/pathParams}}
- *
+ * @return {Promise<Object>}
  */
 {{{moduleName}}}.prototype.{{{sdkMethodName}}} = function {{{sdkMethodName}}}({{methodPathArgs}}options) {
-    options = options || {};
+
+    {{#pathParams}}
+    if (typeof {{name}} === 'object' && {{name}} !== null && typeof options === 'undefined') {
+        options = {{name}};
+        {{name}} = undefined;
+    }
+
+    if (typeof {{name}} === 'undefined') {
+        {{name}} = options && options.path && options.path.{{name}};
+    }
+    if (typeof {{name}} !== 'string') {
+        return Promise.reject(new Error('"{{name}}" path segment parameter must be a string.'));
+    }
+    {{/pathParams}}
 
     var opt = {
         url     : "{{{url}}}",
         method  : "{{{method}}}",
         {{#hasBody}}
-        data    : options.data,
+        data    : options && options.data,
         {{/hasBody}}
-        params  : options.params,
-        headers : options.headers
+        params  : options && options.params,
+        headers : options && options.headers
     };
 
     {{#pathParams}}
-    {{name}} = {{name}} || (options.path && options.path[{{name}}]);
-
-    if (!{{name}}) {
-        return Promise.reject(new Error('"{{name}}" path segment parameter is required.'));
-    }
-
     opt.url = opt.url.replace(/{{openbrace}}{{name}}{{closebrace}}/, {{name}});
     {{/pathParams}}
 

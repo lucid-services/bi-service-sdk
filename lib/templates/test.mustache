@@ -5,10 +5,10 @@ var sinon          = require('sinon');
 var chai           = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 var sinonChai      = require("sinon-chai");
-var _              = require('lodash');
 var sdkInterface   = require('bi-service-sdk');
 
 var sdk = require('../{{{version}}}.js');
+var moduleIndexJs = require('../index.js');
 
 
 //this makes sinon-as-promised available in sinon:
@@ -22,10 +22,148 @@ chai.should();
 
 var context = {{{context}}};
 
+describe('index.js', function() {
+    it(`should export SDK verion ${context.version}`, function() {
+        moduleIndexJs.should.have.property(context.version, sdk);
+    });
+});
+
 describe(context.moduleName, function() {
 
     it('should export constructor object which inherits from BIServiceSDK interface', function() {
-        sdk.should.be.instanceof('function');
+        sdk.should.be.instanceof(Function);
         (new sdk).should.be.instanceof(sdkInterface.BIServiceSDK);
     });
+
+    describe('SDK methods', function() {
+
+        beforeEach(function() {
+            this.sdk = new sdk;
+            this.requestStub = sinon.stub(this.sdk.axios, 'request').returns(Promise.resolve({}));
+        });
+
+        context.paths.forEach(function(path) {
+            describe(path.sdkMethodName, function() {
+                beforeEach(function() {
+
+                    this.path = path;
+                    this.methodArgs = range(path.pathParams.length);
+                });
+
+                it('should be a method of the SDK', function() {
+                    this.sdk.should.have.property(path.sdkMethodName).that.is.a('function');
+                });
+
+                it('should return a promise', function() {
+                    return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).should.be.fulfilled;
+                });
+
+                it('should be called with correct http method', function() {
+
+                    var self = this;
+
+                    return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).
+                    should.be.fulfilled.then(function() {
+                        self.requestStub.should.have.been.calledOnce;
+                        self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
+                            val.should.have.property('method', self.path.method);
+                            return true;
+                        }));
+                    });
+                });
+
+                it('should be called with correct url', function() {
+
+                    var self = this;
+
+                    return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).
+                    should.be.fulfilled.then(function() {
+                        var url = self.path.url;
+
+                        self.methodArgs.forEach(function(arg) {
+                            url = url.replace(/{\w+}/, arg);
+                        });
+
+                        self.requestStub.should.have.been.calledOnce;
+                        self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
+                            val.should.have.property('url', url);
+                            return true;
+                        }));
+                    });
+                });
+
+                it('should be called with correct url (2)', function() {
+
+                    var self = this;
+
+                    var pathArgs = this.path.pathParams.reduce(function(out, arg, index) {
+                        out[arg.name] = self.methodArgs[index];
+                        return out;
+                    }, {});
+
+                    return this.sdk[path.sdkMethodName]({path: pathArgs}).
+                    should.be.fulfilled.then(function() {
+                        var url = self.path.url;
+
+                        self.methodArgs.forEach(function(arg) {
+                            url = url.replace(/{\w+}/, arg);
+                        });
+
+                        self.requestStub.should.have.been.calledOnce;
+                        self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
+                            val.should.have.property('url', url);
+                            return true;
+                        }));
+                    });
+                });
+
+                it('should provide the request method with received req data (headers, body, query)', function() {
+
+                    var self = this;
+
+                    var data = {
+                        data: {
+                            body: 'param'
+                        },
+                        params: {
+                            query: 'param'
+                        },
+                        headers: {
+                            header: 'param'
+                        }
+                    }
+
+                    this.methodArgs.push(data);
+                    return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).
+                    should.be.fulfilled.then(function() {
+                        var url = self.path.url;
+
+                        self.methodArgs.forEach(function(arg) {
+                            url = url.replace(/{\w+}/, arg);
+                        });
+
+                        self.requestStub.should.have.been.calledOnce;
+                        self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
+                            if (~['post', 'put', 'detele'].indexOf(self.path.method)) {
+                                val.should.have.property('data', data.data);
+                            }
+                            val.should.have.property('params', data.params);
+                            val.should.have.property('headers', data.headers);
+                            return true;
+                        }));
+                    });
+                });
+            });
+        });
+    });
 });
+
+function range(num) {
+    var out = [];
+
+    for (var i = 0, len = num; i < len; i++) {
+        out.push(i + '');
+    }
+
+    return out;
+}
