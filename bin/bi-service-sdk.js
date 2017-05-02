@@ -339,7 +339,7 @@ var builder = {
         serviceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
         version = version.replace(/\./, '_');
 
-        return `${serviceName}SDK_${version}`;
+        return `${serviceName}SDK_${version}`.replace(/\W+/g, '_');
     },
 
     /**
@@ -425,9 +425,11 @@ var builder = {
         }
 
         //invalid --file option is provided
-        if (~[66, 65].indexOf(result.status)) {
+        if (~[66, 65].indexOf(result.status) && !_attempt) {
             return this.getSwaggerSpecs.call(this, projectRoot, executable, execArgs, ++_attempt);
-        } else if (result.status !== 0) {
+        }
+
+        if (result.status !== 0) {
             throw new Error(result.stderr.toString());
         }
 
@@ -495,7 +497,7 @@ if (module.parent === null) {
         'Generates client SDK npm package for given app(s)')
     .example('> $0 --doc-exec ./node_modules/.bin/bi-service-doc',
         'Generates client SDKs for each exported app of bi-service based project under current working dirrectory')
-    .help('h', false).wrap(yargs.terminalWidth()).argv;
+    .help('h', false).alias('h', 'help').wrap(yargs.terminalWidth()).argv;
 
     return module.exports.main(argv);
 }

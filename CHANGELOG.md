@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.2
+
+* [FIXED] Infinite loop when an Error occured while loading a bi-service based app
+* [FIXED] sdk constructor name string should be sanitized and non-alphanumberic characters should be replaced by `_`
+* [FIXED] add missing alias option `--help` => `-h`
+
 ## 0.5.1
 
 * [ADDED] SDK has `version` property which equals to API version string.
