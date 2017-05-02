@@ -1,6 +1,6 @@
 {
   "name": "bi-service-sdk",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Exposes common sdk interface & provides client sdk generator for bi-service based apps",
   "main": "index.js",
   "bin": "./bin/bi-service-sdk.js",
