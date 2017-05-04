@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.3
+
+* [FIXED] fetch `path` url parameters from url string if they are not provided by swagger schema
+* [FIXED] make it work on Windows - spawn `mocha.cmd` & `npm.cmd` instead of `mocha` & `npm` shel  commands
+* [FIXED] prepend default `http(s)` protocol to the `baseURL` only if the url doesn't define protocol on its own
+
 ## 0.5.2
 
 * [FIXED] Infinite loop when an Error occured while loading a bi-service based app

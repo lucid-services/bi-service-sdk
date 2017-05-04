@@ -165,11 +165,13 @@ var builder = {
             'sinon-chai'
         ];
 
+        var npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
         if (vLevel >= 1) {
             console.info(`${projectRoot} - preparing testing environment`);
             console.info('npm ' + npmArgs.join(' '));
         }
-        var proc = childProcess.spawn('npm', npmArgs, {cwd: projectRoot});
+        var proc = childProcess.spawn(npmCmd, npmArgs, {cwd: projectRoot});
 
         return new Promise(function(resolve, reject) {
             var stderr = '';
@@ -204,7 +206,9 @@ var builder = {
         var mochaArgs = ['--ui', 'bdd', '--colors', '--check-leaks', '-t', '5000',
                 '--reporter', 'spec', "tests/**/*.js"];
 
-        var proc = childProcess.spawn('mocha',
+        var mochaCmd = process.platform === 'win32' ? 'mocha.cmd' : 'mocha';
+
+        var proc = childProcess.spawn(mochaCmd,
             mochaArgs,
             {cwd: projectRoot}
         );
@@ -277,10 +281,14 @@ var builder = {
             openbrace  : '{',
             closebrace : '}',
             version    : spec.info.version,
-            host       : (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + spec.host,
+            host       : spec.host,
             basePath   : spec.basePath,
             paths      : []
         };
+
+        if (!out.host.match(/^\w+:\/\//)) {
+            out.host = (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
+        }
 
         var _sdkMethodNames = [];
 
@@ -308,6 +316,11 @@ var builder = {
                     }
                 };
 
+                //if path parameters were not described via validator schema,
+                //we need to fetch them from the url string and make sure
+                //they are in correct order
+                self.sanitizePathParams(path, def.pathParams);
+
                 //convert body payload to formData-like format and strip parameters
                 //to one level deep definitions
                 if (def.bodyParams.length == 1 && def.bodyParams[0].in === 'body') {
@@ -324,6 +337,52 @@ var builder = {
         });
 
         return out;
+    },
+
+    /**
+     * @param {String} url
+     * @param {Array} params
+     *
+     * @return {Array}
+     */
+    sanitizePathParams: function(url, params) {
+        var regex = /(?:{)(\w+)(?:})/g;
+        var matches, segments = [];
+        var corrections = 0;
+
+        while (matches = regex.exec(url)) {
+            segments.push(matches[1]);
+            var param = _.find(params, {name: matches[1]});
+
+            if (!param) {
+                corrections++;
+                param = {
+                    type: 'mixed',
+                    name: matches[1]
+                };
+                params.push(param);
+            }
+
+            //path param names are used as variables in generated code,
+            //so make sure the name is valid
+            param.name = param.name.replace(/\W+/g, '_');
+        }
+
+        //re-sorting is required for the build script to be deterministic
+        if (corrections && corrections !== segments.length) {
+            params.sort(function(a, b) {
+                var bPosition = segments.indexOf(b.name);
+                var aPosition = segments.indexOf(a.name);
+
+                if (aPosition < bPosition) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+        }
+
+        return params;
     },
 
     /**
