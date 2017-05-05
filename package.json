@@ -33,6 +33,7 @@
     "mustache": "^2.3.0",
     "sinon-as-promised": "^4.0.0",
     "sinon-chai": "^2.8.0",
+    "sinon": "^1.17.3",
     "tmp": "0.0.31",
     "yargs": "^7.1.0"
   }

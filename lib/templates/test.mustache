@@ -39,6 +39,23 @@ describe(context.moduleName, function() {
         (new sdk).version.should.be.equal(context.version);
     });
 
+    it('should call parent BIServiceSDK constructor with already prepared `options` object', function() {
+        //we must test this explicitly this way as spy.calledWith API stores references
+        //to the object arguments, thus if a function is called with an object that does NOT
+        //contain all required properties (which are then added after the function call),
+        //the `calledWith` assertion would have still passed through successfully
+        var sdkInterfaceConstructorStub = sinon.stub(sdkInterface.BIServiceSDK, 'call', function(thisContext, options) {
+            options.should.be.eql({
+                baseURL: context.host + context.basePath
+            });
+        });
+
+        var client = new sdk;
+
+        sdkInterfaceConstructorStub.should.have.been.calledOnce;
+        sdkInterfaceConstructorStub.restore();
+    });
+
     describe('SDK methods', function() {
 
         beforeEach(function() {

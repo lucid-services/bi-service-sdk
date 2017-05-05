@@ -22,7 +22,7 @@ function BIServiceSDK(options) {
         throw new Error('`errors` option must be a hash object');
     }
 
-    this.axios = axios.create(options);
+    this.axios = axios.create(this.options);
 };
 
 
@@ -41,9 +41,6 @@ function BIServiceSDK(options) {
  */
 BIServiceSDK.prototype.$request = function(options) {
     var self = this;
-
-    options = options || {};
-    Object.assign(options, this.options);
 
     return this.axios.request(options).then(function(response) {
         delete response.statusText;
