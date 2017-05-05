@@ -42,6 +42,9 @@ function BIServiceSDK(options) {
 BIServiceSDK.prototype.$request = function(options) {
     var self = this;
 
+    options = options || {};
+    Object.assign(options, this.options);
+
     return this.axios.request(options).then(function(response) {
         delete response.statusText;
         delete response.config;
