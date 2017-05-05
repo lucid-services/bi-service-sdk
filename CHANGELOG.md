@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] `BIServiceSDK.prototype.$request` merge default options with request options object
+
 ## 0.5.4
 
 ## 0.5.3
