@@ -27,6 +27,17 @@ function BIServiceSDK(options) {
 
 
 /**
+ *
+ * @param {Function} plugin - takes Axios instance object as the single argument
+ *
+ * @return {undefined}
+ */
+BIServiceSDK.prototype.use = function(plugin) {
+    plugin(this.axios);
+};
+
+
+/**
  * @method
  * @private
  *
