@@ -316,10 +316,7 @@ var builder = {
                     }
                 };
 
-                //if path parameters were not described via validator schema,
-                //we need to fetch them from the url string and make sure
-                //they are in correct order
-                self.sanitizePathParams(path, def.pathParams);
+                self.sanitizePathParams(def.pathParams);
 
                 //convert body payload to formData-like format and strip parameters
                 //to one level deep definitions
@@ -340,47 +337,18 @@ var builder = {
     },
 
     /**
-     * @param {String} url
      * @param {Array} params
      *
      * @return {Array}
      */
-    sanitizePathParams: function(url, params) {
-        var regex = /(?:{)(\w+)(?:})/g;
-        var matches, segments = [];
-        var corrections = 0;
+    sanitizePathParams: function(params) {
+        params = params || [];
 
-        while (matches = regex.exec(url)) {
-            segments.push(matches[1]);
-            var param = _.find(params, {name: matches[1]});
-
-            if (!param) {
-                corrections++;
-                param = {
-                    type: 'mixed',
-                    name: matches[1]
-                };
-                params.push(param);
-            }
-
+        params.forEach(function(param) {
             //path param names are used as variables in generated code,
             //so make sure the name is valid
             param.name = param.name.replace(/\W+/g, '_');
-        }
-
-        //re-sorting is required for the build script to be deterministic
-        if (corrections && corrections !== segments.length) {
-            params.sort(function(a, b) {
-                var bPosition = segments.indexOf(b.name);
-                var aPosition = segments.indexOf(a.name);
-
-                if (aPosition < bPosition) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            });
-        }
+        });
 
         return params;
     },
