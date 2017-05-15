@@ -81,10 +81,10 @@ function {{{moduleName}}}(options) {
         url     : "{{{url}}}",
         method  : "{{{method}}}",
         {{#hasBody}}
-        data    : options && options.data,
+        data    : (options && options.data) !== undefined ? options.data : {},
         {{/hasBody}}
-        params  : options && options.params,
-        headers : options && options.headers
+        params  : (options && options.params) !== undefined ? options.params : {},
+        headers : (options && options.headers) !== undefined ? options.headers : {}
     };
 
     {{#pathParams}}
