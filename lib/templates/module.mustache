@@ -16,10 +16,11 @@ function {{{moduleName}}}(options) {
         options.baseURL = "{{{host}}}";
     }
 
-    ServiceSDK.call(this, options);
-
     this.version = "{{{version}}}";
-    this.options.baseURL += "{{{basePath}}}";
+    options.baseURL += "{{{basePath}}}";
+
+    //options object must be ready before we call the parent constructor
+    ServiceSDK.call(this, options);
 }
 
 {{{moduleName}}}.prototype = Object.create(ServiceSDK.prototype);
