@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 0.5.7
 
 * [FIXED] - when `axios.request(config)` method is called, the config object must contain object values for `headers` & `data` & `params` properties, they can NOT have other values like `undefined` & `null` otherwise global config values will be incorrectly merged with request specific config
 
