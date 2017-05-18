@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## FUTURE
 
+* [ADDED] - axios req response errors are converted to `SDKRequestError`.
 * [ADDED] - `BIServiceSDK.prototype.use` method
 * [ADDED] - `query` BIServiceSDK constructor option which is alias for the `params` constructor option
 * [CHANGED] - methods of generaged SDKs accept `query` option instead of the `params` option.
 * [CHANGED] - All methods accept `data` option which previously was supported only for POST|PUT|DELETE requests
+* [CHANGED] - error response object properties are converted to camelCase
 
 ## 0.5.7
 

@@ -5,8 +5,9 @@ var chaiAsPromised = require('chai-as-promised');
 var sinonChai      = require("sinon-chai");
 var axios          = require('axios');
 
-var sdk   = require('../index.js');
-var BIServiceSDK = sdk.BIServiceSDK;
+var SDKRequestError = require('../lib/errors/SDKRequestError.js');
+var sdk             = require('../index.js');
+var BIServiceSDK    = sdk.BIServiceSDK;
 
 //this makes sinon-as-promised available in sinon:
 require('sinon-as-promised');
@@ -141,8 +142,35 @@ describe('BIServiceSDK', function() {
         });
 
         [404, 400, 500].forEach(function(status) {
-            it(`should return rejected promise with an Error when we get: ${status} status`, function() {
-                return this.sdk.$request({url: `status/${status}`}).should.be.rejectedWith(Error);
+            it(`should return rejected promise with a SDKRequestError when we get: ${status} status`, function() {
+                return this.sdk.$request({url: `status/${status}`}).should.be.rejected.then(function(err) {
+                    err.should.be.instanceof(SDKRequestError);
+                    err.should.have.property('code', status);
+                });
+            });
+
+            it('should convert error response properties to camelCase', function() {
+                var requestStub = sinon.stub(this.sdk.axios.defaults, 'adapter').returns(Promise.reject({
+                    message: 'rejection test error',
+                    response: {
+                        status: status,
+                        headers: {},
+                        data: {
+                            message: 'rejection test',
+                            api_code: 'rejectionTest',
+                            another_property: 'value'
+                        }
+                    }
+                }));
+
+                return this.sdk.$request({url: `status/${status}`}).should.be.rejected.then(function(err) {
+                    err.should.have.property('apiCode', 'rejectionTest');
+                    err.should.have.property('message', 'rejection test');
+                    err.should.have.property('anotherProperty', 'value');
+                    err.should.have.property('code', status);
+
+                    requestStub.restore();
+                });
             });
         });
 

@@ -1,6 +1,10 @@
-var axios = require('axios');
+var axios       = require('axios');
+var toCamelCase = require('lodash.camelcase');
+
+var SDKRequestError = require('./lib/errors/SDKRequestError.js');
 
 module.exports.BIServiceSDK = BIServiceSDK;
+module.exports.SDKRequestError = SDKRequestError;
 
 /**
  * @constructor
@@ -41,6 +45,22 @@ function BIServiceSDK(options) {
             return response;
         });
     }
+
+    //transform error response properties to camelCase
+    this.axios.interceptors.response.use(null, function(err) {
+        if (   err.response
+            && typeof err.response.data === 'object'
+            && err.response.data !== null
+        ) {
+            var out = {};
+            Object.keys(err.response.data).forEach(function(prop) {
+                out[toCamelCase(prop)] = err.response.data[prop];
+            });
+            err.response.data = out;
+        }
+
+        return Promise.reject(err);
+    });
 };
 
 
@@ -88,21 +108,27 @@ BIServiceSDK.prototype.$request = function(options) {
     }
 
     return this.axios.request(options).catch(function(err) {
-        if (err.response) {
+        if (typeof err.response === 'object' && err.response !== null) {
 
             var status = err.response.status;
             var baseStatus = parseInt((status + '')[0] + '00');
+            var e = null; //transformed err
 
             if (typeof self.options.errors[status] === 'function') {
-                throw new self.options.errors[status](err.response);
+                e = new self.options.errors[status](err.response);
             } else if (typeof self.options.errors[baseStatus] === 'function') {
-                throw new self.options.errors[baseStatus](err.response);
+                e = new self.options.errors[baseStatus](err.response);
+            //there wasn't any custom Error constructor to transtate the err to
+            } else {
+                e = new SDKRequestError(err.response.data);
             }
+
+            e.code = err.response.status;
+            delete err.response;
+            return Promise.reject(e);
         }
 
         //response never received or failed while setting up the request
-        //or there wasn't any custom Error constructor to transtate the err to
-        throw err;
+        return Promise.reject(err);
     });
 };
-
