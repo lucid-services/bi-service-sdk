@@ -1,6 +1,6 @@
 {
   "name": "bi-service-sdk",
-  "version": "0.5.7",
+  "version": "0.6.0",
   "description": "Exposes common sdk interface & provides client sdk generator for bi-service based apps",
   "main": "index.js",
   "bin": "./bin/bi-service-sdk.js",
@@ -19,7 +19,8 @@
   "author": "Bohemia Interactive",
   "private": false,
   "dependencies": {
-    "axios": "^0.16.x"
+    "axios": "^0.16.x",
+    "lodash.camelcase": "4.3.0"
   },
   "devDependencies": {
     "archiver": "^1.3.0",

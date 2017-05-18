@@ -138,16 +138,14 @@ describe(context.moduleName, function() {
                     });
                 });
 
-                it('should set default `data` & `headers` & `params` values to empty objects when we dont provide the options', function() {
+                it('should set default `data` & `headers` & `params` (aka. query) values to empty objects when we dont provide the options', function() {
                     var self = this;
 
                     return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).
                     should.be.fulfilled.then(function() {
 
                         self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
-                            if (~['post', 'put', 'detele'].indexOf(self.path.method)) {
-                                val.should.have.property('data').that.is.eql({});
-                            }
+                            val.should.have.property('data').that.is.eql({});
                             val.should.have.property('params').that.is.eql({});
                             val.should.have.property('headers').that.is.eql({});
                             return true;
@@ -161,9 +159,9 @@ describe(context.moduleName, function() {
 
                     var data = {
                         data: {
-                            body: 'param'
+                            data: 'param' // query or body param
                         },
-                        params: {
+                        query: {
                             query: 'param'
                         },
                         headers: {
@@ -182,10 +180,8 @@ describe(context.moduleName, function() {
 
                         self.requestStub.should.have.been.calledOnce;
                         self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
-                            if (~['post', 'put', 'detele'].indexOf(self.path.method)) {
-                                val.should.have.property('data', data.data);
-                            }
-                            val.should.have.property('params', data.params);
+                            val.should.have.property('data', data.data);
+                            val.should.have.property('params', data.query);
                             val.should.have.property('headers', data.headers);
                             return true;
                         }));

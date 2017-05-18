@@ -5,8 +5,9 @@ var chaiAsPromised = require('chai-as-promised');
 var sinonChai      = require("sinon-chai");
 var axios          = require('axios');
 
-var sdk   = require('../index.js');
-var BIServiceSDK = sdk.BIServiceSDK;
+var SDKRequestError = require('../lib/errors/SDKRequestError.js');
+var sdk             = require('../index.js');
+var BIServiceSDK    = sdk.BIServiceSDK;
 
 //this makes sinon-as-promised available in sinon:
 require('sinon-as-promised');
@@ -38,6 +39,34 @@ describe('BIServiceSDK', function() {
                 });
             }).to.throw(Error);
         });
+
+        it('should accept `query` option and handle it as alias for the `params` option', function() {
+            var sdk = new BIServiceSDK({
+                baseURL: 'localhost',
+                query: {foo: 'bar'},
+                params: {bar: 'foo'}
+            });
+
+            sdk.options.should.have.property('params').that.is.eql({
+                foo: 'bar',
+                bar: 'foo'
+            });
+        });
+    });
+
+    describe('"use" method', function() {
+        it('should call received function with the axios instance object', function() {
+            var spy = sinon.spy();
+
+            var sdk = new BIServiceSDK({
+                baseURL: 'http://localhost'
+            });
+
+            sdk.use(spy);
+
+            spy.should.have.been.calledOnce;
+            spy.should.have.been.calledWith(sdk.axios);
+        });
     });
 
     describe('$request', function() {
@@ -58,11 +87,42 @@ describe('BIServiceSDK', function() {
             return this.sdk.$request().should.be.an.instanceof(Promise);
         });
 
+        ['GET', 'PATCH'].forEach(function(method) {
+            describe(`${method} methods`, function() {
+                it(`should append options.data parameters to the query parameters ("params" option)`, function() {
+                    var self = this;
+                    var m = method.toLowerCase();
+
+                    return this.sdk.$request({
+                        url: m,
+                        method: m,
+                        data: {
+                            foo: 'bar'
+                        },
+                        params: {
+                            bar: 'foo'
+                        }
+                    }).should.be.fulfilled.then(function(response) {
+                        self.axiosRequestSpy.should.have.been.calledWith({
+                            url: m,
+                            method: m,
+                            params: {
+                                foo: 'bar',
+                                bar: 'foo'
+                            }
+                        });
+                    });
+                });
+            });
+        });
+
         it('should return fulfilled promise with response object', function() {
             return this.sdk.$request({url: 'get'}).should.be.fulfilled.then(function(response) {
                 response.should.have.property('status').that.is.a('number');
                 response.should.have.property('data').that.is.a('object');
                 response.should.have.property('headers').that.is.a('object');
+                response.should.not.have.property('config');
+                response.should.not.have.property('request');
             });
         });
 
@@ -82,8 +142,35 @@ describe('BIServiceSDK', function() {
         });
 
         [404, 400, 500].forEach(function(status) {
-            it(`should return rejected promise with an Error when we get: ${status} status`, function() {
-                return this.sdk.$request({url: `status/${status}`}).should.be.rejectedWith(Error);
+            it(`should return rejected promise with a SDKRequestError when we get: ${status} status`, function() {
+                return this.sdk.$request({url: `status/${status}`}).should.be.rejected.then(function(err) {
+                    err.should.be.instanceof(SDKRequestError);
+                    err.should.have.property('code', status);
+                });
+            });
+
+            it('should convert error response properties to camelCase', function() {
+                var requestStub = sinon.stub(this.sdk.axios.defaults, 'adapter').returns(Promise.reject({
+                    message: 'rejection test error',
+                    response: {
+                        status: status,
+                        headers: {},
+                        data: {
+                            message: 'rejection test',
+                            api_code: 'rejectionTest',
+                            another_property: 'value'
+                        }
+                    }
+                }));
+
+                return this.sdk.$request({url: `status/${status}`}).should.be.rejected.then(function(err) {
+                    err.should.have.property('apiCode', 'rejectionTest');
+                    err.should.have.property('message', 'rejection test');
+                    err.should.have.property('anotherProperty', 'value');
+                    err.should.have.property('code', status);
+
+                    requestStub.restore();
+                });
             });
         });
 

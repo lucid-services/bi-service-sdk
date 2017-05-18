@@ -296,6 +296,16 @@ var builder = {
             Object.keys(spec.paths[path]).forEach(function(method) {
                 var route = spec.paths[path][method];
 
+                var queryParams = self.filterParams(route.parameters, 'query');
+                var bodyParams = self.filterParams(route.parameters, 'body|formData');
+
+                //convert body payload to formData-like format and strip parameters
+                //to one level deep definitions
+                if (bodyParams.length == 1 && bodyParams[0].in === 'body') {
+                    bodyParams = self.body2Params(bodyParams[0]);
+                }
+
+
                 var def = {
                     sdkMethodName : route.sdkMethodName,
                     hasBody       : ~['post', 'put', 'delete'].indexOf(method.toLowerCase()),
@@ -306,9 +316,7 @@ var builder = {
                     method        : method,
                     url           : path,
                     pathParams    : self.filterParams(route.parameters, 'path'),
-                    queryParams   : self.filterParams(route.parameters, 'query'),
                     headerParams  : self.filterParams(route.parameters, 'header'),
-                    bodyParams    : self.filterParams(route.parameters, 'body|formData'),
                     methodPathArgs: function() {
                         return this.pathParams.map(function(param) {
                             return param.name;
@@ -316,13 +324,13 @@ var builder = {
                     }
                 };
 
-                self.sanitizePathParams(def.pathParams);
+                //for thore requests which have BODY payload, "data" option
+                //referes to the body parameters whereas for eg.: GET / PATCH requests
+                //"data" is expected to contain query parameters
+                def.dataParams = def.hasBody ? bodyParams : queryParams;
+                def.queryParams = def.hasBody ? queryParams : [];
 
-                //convert body payload to formData-like format and strip parameters
-                //to one level deep definitions
-                if (def.bodyParams.length == 1 && def.bodyParams[0].in === 'body') {
-                    def.bodyParams = self.body2Params(def.bodyParams[0]);
-                }
+                self.sanitizePathParams(def.pathParams);
 
                 if (~_sdkMethodNames.indexOf(route.sdkMethodName)) {
                     throw new Error(`Duplicate route sdk method name: ${route.sdkMethodName}`);

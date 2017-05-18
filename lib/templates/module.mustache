@@ -41,17 +41,15 @@ function {{{moduleName}}}(options) {
  * @param {{openbrace}}{{type}}{{closebrace}} [{{name}}]{{#description}} - {{{description}}}{{/description}}
 {{/pathParams}}
  * @param {Object} options
- {{#hasBody}}
  * @param {Object} options.data
- {{#bodyParams}}
+ {{#dataParams}}
  * @param {{openbrace}}{{type}}{{closebrace}} options.data.{{name}}{{#description}} - {{{description}}}{{/description}}
- {{/bodyParams}}
- {{/hasBody}}
- * @param {Object} options.params
+ {{/dataParams}}
+ * @param {Object} [options.query]
  {{#queryParams}}
  * @param {{openbrace}}{{type}}{{closebrace}} [options.params.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/queryParams}}
- * @param {Object} options.headers
+ * @param {Object} [options.headers]
  {{#headerParams}}
  * @param {{openbrace}}{{type}}{{closebrace}} [options.headers.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/headerParams}}
@@ -80,10 +78,8 @@ function {{{moduleName}}}(options) {
     var opt = {
         url     : "{{{url}}}",
         method  : "{{{method}}}",
-        {{#hasBody}}
         data    : (options && options.data) !== undefined ? options.data : {},
-        {{/hasBody}}
-        params  : (options && options.params) !== undefined ? options.params : {},
+        params  : (options && options.query) !== undefined ? options.query : {},
         headers : (options && options.headers) !== undefined ? options.headers : {}
     };
 

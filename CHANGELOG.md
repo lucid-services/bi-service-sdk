@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.6.0
+
+* [ADDED] - axios req response errors are converted to `SDKRequestError`.
+* [ADDED] - `BIServiceSDK.prototype.use` method
+* [ADDED] - `query` BIServiceSDK constructor option which is alias for the `params` constructor option
+* [CHANGED] - methods of generaged SDKs accept `query` option instead of the `params` option.
+* [CHANGED] - All methods accept `data` option which previously was supported only for POST|PUT|DELETE requests
+* [CHANGED] - error response object properties are converted to camelCase
+
 ## 0.5.7
 
 * [FIXED] - when `axios.request(config)` method is called, the config object must contain object values for `headers` & `data` & `params` properties, they can NOT have other values like `undefined` & `null` otherwise global config values will be incorrectly merged with request specific config
