@@ -38,6 +38,34 @@ describe('BIServiceSDK', function() {
                 });
             }).to.throw(Error);
         });
+
+        it('should accept `query` option and handle it as alias for the `params` option', function() {
+            var sdk = new BIServiceSDK({
+                baseURL: 'localhost',
+                query: {foo: 'bar'},
+                params: {bar: 'foo'}
+            });
+
+            sdk.options.should.have.property('params').that.is.eql({
+                foo: 'bar',
+                bar: 'foo'
+            });
+        });
+    });
+
+    describe('"use" method', function() {
+        it('should call received function with the axios instance object', function() {
+            var spy = sinon.spy();
+
+            var sdk = new BIServiceSDK({
+                baseURL: 'http://localhost'
+            });
+
+            sdk.use(spy);
+
+            spy.should.have.been.calledOnce;
+            spy.should.have.been.calledWith(sdk.axios);
+        });
     });
 
     describe('$request', function() {
@@ -58,11 +86,42 @@ describe('BIServiceSDK', function() {
             return this.sdk.$request().should.be.an.instanceof(Promise);
         });
 
+        ['GET', 'PATCH'].forEach(function(method) {
+            describe(`${method} methods`, function() {
+                it(`should append options.data parameters to the query parameters ("params" option)`, function() {
+                    var self = this;
+                    var m = method.toLowerCase();
+
+                    return this.sdk.$request({
+                        url: m,
+                        method: m,
+                        data: {
+                            foo: 'bar'
+                        },
+                        params: {
+                            bar: 'foo'
+                        }
+                    }).should.be.fulfilled.then(function(response) {
+                        self.axiosRequestSpy.should.have.been.calledWith({
+                            url: m,
+                            method: m,
+                            params: {
+                                foo: 'bar',
+                                bar: 'foo'
+                            }
+                        });
+                    });
+                });
+            });
+        });
+
         it('should return fulfilled promise with response object', function() {
             return this.sdk.$request({url: 'get'}).should.be.fulfilled.then(function(response) {
                 response.should.have.property('status').that.is.a('number');
                 response.should.have.property('data').that.is.a('object');
                 response.should.have.property('headers').that.is.a('object');
+                response.should.not.have.property('config');
+                response.should.not.have.property('request');
             });
         });
 

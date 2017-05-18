@@ -5,11 +5,12 @@ module.exports.BIServiceSDK = BIServiceSDK;
 /**
  * @constructor
  *
- * @param {Object} [options] - defaults of axios
+ * @param {Object} [options] - supports all axios options
+ * @param {Object} [options.query] - alias for axios `params` option
  * @param {Object} [options.errors] - a hash object mapping http status code to custom Error constructor
  */
 function BIServiceSDK(options) {
-    options = options || {};
+    options = Object.assign({}, options || {});
     options.errors = options.errors || {};
 
     this.options = options;
@@ -22,7 +23,24 @@ function BIServiceSDK(options) {
         throw new Error('`errors` option must be a hash object');
     }
 
+    if (typeof options.query === 'object' && options.query !== null) {
+        options.params = Object.assign(options.params || {}, options.query);
+        delete options.query;
+    }
+
     this.axios = axios.create(this.options);
+
+    var _adapter = this.axios.defaults.adapter;
+    this.axios.defaults.adapter = responseFilterMiddleware;
+
+    function responseFilterMiddleware(config) {
+        return _adapter(config).then(function(response) {
+            delete response.statusText;
+            delete response.config;
+            delete response.request;
+            return response;
+        });
+    }
 };
 
 
@@ -30,10 +48,10 @@ function BIServiceSDK(options) {
  *
  * @param {Function} plugin - takes Axios instance object as the single argument
  *
- * @return {undefined}
+ * @return {mixed}
  */
 BIServiceSDK.prototype.use = function(plugin) {
-    plugin(this.axios);
+    return plugin(this.axios);
 };
 
 
@@ -44,8 +62,8 @@ BIServiceSDK.prototype.use = function(plugin) {
  * @param {Object} options
  * @param {String} options.method
  * @param {String} options.url
- * @param {Object} options.params
- * @param {Object} options.data
+ * @param {Object} options.params - query parameters
+ * @param {Object} options.data - query / body parameters depending on request method
  * @param {Object} options.headers
  *
  * @return {Promise}
@@ -53,12 +71,23 @@ BIServiceSDK.prototype.use = function(plugin) {
 BIServiceSDK.prototype.$request = function(options) {
     var self = this;
 
-    return this.axios.request(options).then(function(response) {
-        delete response.statusText;
-        delete response.config;
-        delete response.request;
-        return response;
-    }).catch(function(err) {
+    //for POST|PUT|DELETE req methods - options.data is expected to contain
+    //body paramters whereas for any other req methods, options.data is expected
+    //to contain query parameters
+    if (typeof options === 'object' && options !== null) {
+        var method = typeof options.method === 'string'
+            ? options.method.toLowerCase() : options.method;
+
+        if (   !~['post', 'put', 'delete'].indexOf(method)
+            && typeof options.data === 'object'
+            && options.data !== null
+        ) {
+            options.params = Object.assign(options.params || {}, options.data);
+            delete options.data;
+        }
+    }
+
+    return this.axios.request(options).catch(function(err) {
         if (err.response) {
 
             var status = err.response.status;
