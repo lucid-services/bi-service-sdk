@@ -145,7 +145,9 @@ describe(context.moduleName, function() {
                     should.be.fulfilled.then(function() {
 
                         self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
-                            val.should.have.property('data').that.is.eql({});
+                            if (~['post', 'put', 'delete'].indexOf(self.path.method)) {
+                                val.should.have.property('data').that.is.eql({});
+                            }
                             val.should.have.property('params').that.is.eql({});
                             val.should.have.property('headers').that.is.eql({});
                             return true;
@@ -167,7 +169,8 @@ describe(context.moduleName, function() {
                         headers: {
                             header: 'param'
                         }
-                    }
+                    };
+                    var dataClone = JSON.parse(JSON.stringify(data));
 
                     this.methodArgs.push(data);
                     return this.sdk[path.sdkMethodName].apply(this.sdk, this.methodArgs).
@@ -180,9 +183,13 @@ describe(context.moduleName, function() {
 
                         self.requestStub.should.have.been.calledOnce;
                         self.requestStub.should.have.been.calledWith(sinon.match(function(val) {
-                            val.should.have.property('data', data.data);
-                            val.should.have.property('params', data.query);
-                            val.should.have.property('headers', data.headers);
+                            if (~['post', 'put', 'delete'].indexOf(self.path.method)) {
+                                val.should.have.property('data').that.is.eql(dataClone.data);
+                            } else {
+                                Object.assign(dataClone.query, dataClone.data);
+                            }
+                            val.should.have.property('params').that.is.eql(dataClone.query);
+                            val.should.have.property('headers').that.is.eql(dataClone.headers);
                             return true;
                         }));
                     });
