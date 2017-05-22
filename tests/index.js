@@ -231,4 +231,219 @@ describe('BIServiceSDK', function() {
             });
         });
     });
+
+    describe('_setReqData', function() {
+        before(function() {
+            this.sdk = new BIServiceSDK({
+                baseURL: 'localhost'
+            });
+        });
+
+        ['get', 'patch', 'options', 'post', 'put', 'delete'].forEach(function(method) {
+            describe(method.toUpperCase(), function() {
+                it(`should set data under "config.headers" key when we provide "headers" as the target`, function() {
+                    var config = {
+                        method: method
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData(null, reqData, config, 'headers');
+                    config.should.have.property('headers', reqData);
+                });
+
+                it(`should assign data properties of received object to "config.headers" object when we provide "headers" as the target`, function() {
+                    var config = {
+                        method: method,
+                        headers: {
+                            bar: 'baz'
+                        }
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData(null, reqData, config, 'headers');
+                    config.should.have.property('headers').that.is.eql({
+                        bar: 'baz',
+                        some: 'value'
+                    });
+                });
+
+                it(`should set data under "config.headers.foo" key when we provide "foo" as the key and "headers" as the target`, function() {
+                    var config = {
+                        method: method
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData('foo', reqData, config, 'headers');
+                    config.should.have.deep.property('headers.foo', reqData);
+                });
+
+                it(`should set data under "config.headers.foo" key when we provide "foo" as the key and "headers" as the target (2)`, function() {
+                    var config = {
+                        method: method,
+                        headers: {
+                            bar: 'baz'
+                        }
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData('foo', reqData, config, 'headers');
+                    config.should.have.deep.property('headers').that.is.eql({
+                        foo: reqData,
+                        bar: 'baz'
+                    });
+                });
+            });
+        });
+
+        ['get', 'patch', 'options'].forEach(function(method) {
+            describe(method.toUpperCase(), function() {
+                ['data', 'query'].forEach(function(target) {
+                    it(`should set data under "config.params" key when we provide "${target}" as the target`, function() {
+                        var config = {
+                            method: method
+                        };
+
+                        var reqData = {
+                            some: 'value'
+                        };
+
+                        this.sdk._setReqData(null, reqData, config, target);
+                        config.should.have.property('params', reqData);
+                    });
+
+                    it(`should assign data properties of received object to "config.params" object when we provide "${target}" as the target`, function() {
+                        var config = {
+                            method: method,
+                            params: {
+                                bar: 'baz'
+                            }
+                        };
+
+                        var reqData = {
+                            some: 'value'
+                        };
+
+                        this.sdk._setReqData(null, reqData, config, target);
+                        config.should.have.property('params').that.is.eql({
+                            bar: 'baz',
+                            some: 'value'
+                        });
+                    });
+
+                    it(`should set data under "config.params.foo" key when we provide "foo" as the key and "${target}" as the target`, function() {
+                        var config = {
+                            method: method
+                        };
+
+                        var reqData = {
+                            some: 'value'
+                        };
+
+                        this.sdk._setReqData('foo', reqData, config, target);
+                        config.should.have.deep.property('params.foo', reqData);
+                    });
+
+                    it(`should set data under "config.params.foo" key when we provide "foo" as the key and "${target}" as the target (2)`, function() {
+                        var config = {
+                            method: method,
+                            params: {
+                                bar: 'baz'
+                            }
+                        };
+
+                        var reqData = {
+                            some: 'value'
+                        };
+
+                        this.sdk._setReqData('foo', reqData, config, target);
+                        config.should.have.deep.property('params').that.is.eql({
+                            foo: reqData,
+                            bar: 'baz'
+                        });
+                    });
+                });
+            });
+        });
+
+        ['post', 'put', 'delete'].forEach(function(method) {
+            describe(method.toUpperCase(), function() {
+                it(`should set data under "config.params" key when we provide "query" as the target`, function() {
+                    var config = {
+                        method: method
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData(null, reqData, config, 'query');
+                    config.should.have.property('params', reqData);
+                });
+
+                it(`should assign data properties of received object to "config.params" object when we provide "query" as the target`, function() {
+                    var config = {
+                        method: method,
+                        params: {
+                            bar: 'baz'
+                        }
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData(null, reqData, config, 'query');
+                    config.should.have.property('params').that.is.eql({
+                        bar: 'baz',
+                        some: 'value'
+                    });
+                });
+
+                it(`should set data under "config.params.foo" key when we provide "foo" as the key and "query" as the target`, function() {
+                    var config = {
+                        method: method
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData('foo', reqData, config, 'query');
+                    config.should.have.deep.property('params.foo', reqData);
+                });
+
+                it(`should set data under "config.params.foo" key when we provide "foo" as the key and "query" as the target (2)`, function() {
+                    var config = {
+                        method: method,
+                        params: {
+                            bar: 'baz'
+                        }
+                    };
+
+                    var reqData = {
+                        some: 'value'
+                    };
+
+                    this.sdk._setReqData('foo', reqData, config, 'query');
+                    config.should.have.deep.property('params').that.is.eql({
+                        foo: reqData,
+                        bar: 'baz'
+                    });
+                });
+            });
+        })
+    });
+
 });
