@@ -3,7 +3,8 @@ var toCamelCase = require('lodash.camelcase');
 
 var SDKRequestError = require('./lib/errors/SDKRequestError.js');
 
-module.exports.BIServiceSDK = BIServiceSDK;
+module.exports                 = BIServiceSDK;
+module.exports.BIServiceSDK    = BIServiceSDK;
 module.exports.SDKRequestError = SDKRequestError;
 
 /**
@@ -71,7 +72,60 @@ function BIServiceSDK(options) {
  * @return {mixed}
  */
 BIServiceSDK.prototype.use = function(plugin) {
-    return plugin(this.axios);
+    return plugin.call(this, this.axios);
+};
+
+
+/**
+ * adapter which maps (user API) target: data|headers|query to internal axios data|headers|params data options
+ *
+ * @param {String} [key]
+ * @param {mixed}  value - data to be set
+ * @param {Object} config - axios config object
+ * @param {String} [target='data'] - possible values data|headers|query
+ *
+ * @return {undefined}
+ */
+BIServiceSDK.prototype._setReqData = function(key, value, config, target) {
+    target = target || 'data';
+
+    var method = typeof config.method === 'string'
+        ? config.method.toLowerCase() : config.method;
+
+    if (!~['post', 'put', 'delete'].indexOf(method)) { //without BODY payload
+        if (~['data', 'query'].indexOf(target)) {
+            setValue(key, value, 'params');
+        } else if (target === 'headers') {
+            setValue(key, value, 'headers');
+        }
+    } else { // with BODY payload
+        if (target === 'data') {
+            setValue(key, value, 'data');
+        } else if (target === 'headers') {
+            setValue(key, value, 'headers');
+        } else if (target === 'query') {
+            setValue(key, value, 'params');
+        }
+    }
+
+    function setValue(k, v, destination) {
+        if (k) {
+            if (   typeof config[destination] !== 'object'
+                || config[destination] === null
+            ) {
+                config[destination] = {};
+            }
+            config[destination][k] = v;
+        } else if (typeof v === 'object'
+            && typeof config[destination] === 'object'
+            && v !== null
+            && config[destination] !== null
+        ) {
+            Object.assign(config[destination], v);
+        } else {
+            config[destination] = v;
+        }
+    }
 };
 
 
@@ -94,17 +148,13 @@ BIServiceSDK.prototype.$request = function(options) {
     //for POST|PUT|DELETE req methods - options.data is expected to contain
     //body paramters whereas for any other req methods, options.data is expected
     //to contain query parameters
-    if (typeof options === 'object' && options !== null) {
-        var method = typeof options.method === 'string'
-            ? options.method.toLowerCase() : options.method;
-
-        if (   !~['post', 'put', 'delete'].indexOf(method)
-            && typeof options.data === 'object'
-            && options.data !== null
-        ) {
-            options.params = Object.assign(options.params || {}, options.data);
-            delete options.data;
-        }
+    if (typeof options === 'object'
+        && options !== null
+        && typeof options.data === 'object'
+        && options.data !== null
+    ) {
+        this._setReqData(null, options.data, options, 'data')
+        delete options.data;
     }
 
     return this.axios.request(options).catch(function(err) {
