@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 0.6.2
 
 * [ADDED] - `BIServiceSDK.prototype._setReqData` - adapter function mapping user API query|data|headers options to internal axios options: params|data|headers
 * [ADDED] - plugin function is called with context of `BIServiceSDK`
