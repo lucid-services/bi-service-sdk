@@ -116,6 +116,31 @@ describe('BIServiceSDK', function() {
             });
         });
 
+        ['POST', 'PUT', 'DELETE'].forEach(function(method) {
+            describe(`${method} methods`, function() {
+                it(`should make a http request with provided BODY payload data ("data" option)`, function() {
+                    var self = this;
+                    var m = method.toLowerCase();
+
+                    return this.sdk.$request({
+                        url: m,
+                        method: m,
+                        data: {
+                            foo: 'bar'
+                        }
+                    }).should.be.fulfilled.then(function(response) {
+                        self.axiosRequestSpy.should.have.been.calledWith({
+                            url: m,
+                            method: m,
+                            data: {
+                                foo: 'bar'
+                            }
+                        });
+                    });
+                });
+            });
+        });
+
         it('should return fulfilled promise with response object', function() {
             return this.sdk.$request({url: 'get'}).should.be.fulfilled.then(function(response) {
                 response.should.have.property('status').that.is.a('number');

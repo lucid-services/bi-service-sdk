@@ -89,10 +89,7 @@ BIServiceSDK.prototype.use = function(plugin) {
 BIServiceSDK.prototype._setReqData = function(key, value, config, target) {
     target = target || 'data';
 
-    var method = typeof config.method === 'string'
-        ? config.method.toLowerCase() : config.method;
-
-    if (!~['post', 'put', 'delete'].indexOf(method)) { //without BODY payload
+    if (!this._hasBodyPayload(config.method)) { //without BODY payload
         if (~['data', 'query'].indexOf(target)) {
             setValue(key, value, 'params');
         } else if (target === 'headers') {
@@ -130,6 +127,24 @@ BIServiceSDK.prototype._setReqData = function(key, value, config, target) {
 
 
 /**
+ *
+ * @param {String} httpMethod
+ *
+ * @return {Boolean}
+ */
+BIServiceSDK.prototype._hasBodyPayload = function(httpMethod) {
+    httpMethod = typeof httpMethod === 'string'
+        ? httpMethod.toLowerCase() : httpMethod;
+
+    if (~['post', 'put', 'delete'].indexOf(httpMethod)) {
+        return true;
+    }
+
+    return false;
+};
+
+
+/**
  * @method
  * @private
  *
@@ -154,7 +169,9 @@ BIServiceSDK.prototype.$request = function(options) {
         && options.data !== null
     ) {
         this._setReqData(null, options.data, options, 'data')
-        delete options.data;
+        if (!this._hasBodyPayload(options.method)) {
+            delete options.data;
+        }
     }
 
     return this.axios.request(options).catch(function(err) {
