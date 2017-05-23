@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 0.6.3
 
 * [FIXED] - request BODY payload was being excluded from `post`/`put`/`delete` requests
 * [FIXED] - added missing "test" npm command to builded SDK npm packages
