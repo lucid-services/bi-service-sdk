@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] - request BODY payload was being excluded from `post`/`put`/`delete` requests
+* [FIXED] - added missing "test" npm command to builded SDK npm packages
+
 ## 0.6.2
 
 * [ADDED] - `BIServiceSDK.prototype._setReqData` - adapter function mapping user API query|data|headers options to internal axios options: params|data|headers
