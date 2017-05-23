@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.0
+
+* [ADDED] - `version` shell option
+* [CHANGED] - npm package versioning schema of generated SDKs
+
 ## 0.6.3
 
 * [FIXED] - request BODY payload was being excluded from `post`/`put`/`delete` requests
