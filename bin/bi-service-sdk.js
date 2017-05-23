@@ -11,6 +11,8 @@ var archiver     = require('archiver');
 var jshint       = require('jshint').JSHINT;
 var Promise      = require('bluebird');
 
+var SDK_VERSION = require('../package.json').version;
+
 var builder = {
     /**
      * @param {Object} argv - cli options
@@ -50,7 +52,11 @@ var builder = {
                 versions: Object.keys(specs[appName])
             });
             var sdkPackage = self.renderTemplate('package',
-                _.merge({appName: appName}, package));
+                _.merge(
+                    {appName: appName},
+                    package,
+                    {version: self.getSDKPackageVersion(SDK_VERSION, package.version)}
+                ));
 
             self.lintSource(sdkIndex);
             self.lintSource(sdkPackage);
@@ -362,6 +368,15 @@ var builder = {
     },
 
     /**
+     * @param {String} sdkInterfaceVersion - npm package version of bi-service-sdk
+     * @param {String} serviceVersion - npm package version of bi-service based app
+     * @return {String}
+     */
+    getSDKPackageVersion: function getSDKPackageVersion(sdkInterfaceVersion, serviceVersion) {
+        return `${sdkInterfaceVersion}-x.${serviceVersion}`;
+    },
+
+    /**
      *
      * @param {String} serviceName
      * @param {String} version
@@ -528,11 +543,21 @@ if (module.parent === null) {
         count: true,
         type: 'boolean'
     })
+    .option('version', {
+        describe: 'Prints bi-service-sdk version',
+        default: false,
+        type: 'boolean'
+    })
     .example('> $0 -s $PROJECTS/bi-depot -- --app public',
         'Generates client SDK npm package for given app(s)')
     .example('> $0 --doc-exec ./node_modules/.bin/bi-service-doc',
         'Generates client SDKs for each exported app of bi-service based project under current working dirrectory')
     .help('h', false).alias('h', 'help').wrap(yargs.terminalWidth()).argv;
+
+    if (argv.version) {
+        console.log(SDK_VERSION);
+        process.exit(0);
+    }
 
     return module.exports.main(argv);
 }
