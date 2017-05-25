@@ -235,6 +235,36 @@ describe('BIServiceSDK', function() {
                 return this.sdk.$request({url: 'status/400'}).should.be.rejectedWith(this.badRequest);
             });
 
+            it('should provide the custom error constructor with error response data', function() {
+                var requestStub = sinon.stub(this.sdk.axios, 'request').returns(Promise.reject({
+                    response: {
+                        status: 400,
+                        data: {
+                            foo:'bar'
+                        }
+                    }
+                }));
+                return this.sdk.$request({url: 'status/400'}).should.be.rejected.then(function(err) {
+                    err.data.should.be.eql({foo: 'bar'});
+                    requestStub.restore();
+                });
+            });
+
+            it('should provide the custom error constructor with error response data (2)', function() {
+                var requestStub = sinon.stub(this.sdk.axios, 'request').returns(Promise.reject({
+                    response: {
+                        status: 401,
+                        data: {
+                            foo:'bar'
+                        }
+                    }
+                }));
+                return this.sdk.$request({url: 'status/401'}).should.be.rejected.then(function(err) {
+                    err.data.should.be.eql({foo: 'bar'});
+                    requestStub.restore();
+                });
+            });
+
             it('should return rejected promise with an Error which is instanceof `badRequest` (2)', function() {
                 return this.sdk.$request({url: 'status/401'}).should.be.rejectedWith(this.badRequest);
             });
