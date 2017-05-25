@@ -50,3 +50,12 @@ app: {
         router.App.sdk.publicDepot //....
     });
 ```
+
+### npm package version schema of generated SDKs
+
+example:  
+bi-service-sdk: `1.0.0`  
+bi-depot: `0.5.0`
+
+bi-depot-private-sdk: `1.0.0-x.0.5.0`
+bi-depot-public-sdk: `1.0.0-x.0.5.0`
