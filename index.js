@@ -182,9 +182,9 @@ BIServiceSDK.prototype.$request = function(options) {
             var e = null; //transformed err
 
             if (typeof self.options.errors[status] === 'function') {
-                e = new self.options.errors[status](err.response);
+                e = new self.options.errors[status](err.response.data);
             } else if (typeof self.options.errors[baseStatus] === 'function') {
-                e = new self.options.errors[baseStatus](err.response);
+                e = new self.options.errors[baseStatus](err.response.data);
             //there wasn't any custom Error constructor to transtate the err to
             } else {
                 e = new SDKRequestError(err.response.data);
