@@ -457,6 +457,7 @@ var builder = {
         args = _.clone(execArgs);
         args.unshift('get:swagger');
         args.unshift(executable);
+        args.unshift('--preserve-symlinks');
 
         if (!~args.indexOf('-f') && !~args.indexOf('--file')) {
             args.push('--file');

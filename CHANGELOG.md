@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] - spawn node process with `--preserve-symlinks` flag
+
 ## 1.0.1
 
 * [FIXED] - custom Error constructors were being provided with incorrect response data
