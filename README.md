@@ -59,3 +59,27 @@ bi-depot: `0.5.0`
 
 bi-depot-private-sdk: `1.0.0-x.0.5.0`
 bi-depot-public-sdk: `1.0.0-x.0.5.0`
+
+### defining a generated SDK module as a npm dependency
+
+```json
+{
+    "dependencies": {
+        "bi-depot-private-sdk": "^1.0.0-x.0.5.0 <1.0.0-x.1.0.0"
+    }
+}
+```
+
+The above version restriction will match for example:  
+
+* `1.0.0-x.0.5.0`
+* `1.0.0-x.0.6.0`
+* `1.0.0-x.0.6.1`
+
+but will **NOT** match:  
+
+* `1.0.0-x.1.0.0`
+* `1.0.1-x.0.5.0`
+* `1.1.0-x.0.5.0`
+* `2.1.0-x.0.5.0`
+
