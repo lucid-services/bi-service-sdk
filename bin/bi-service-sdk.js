@@ -293,7 +293,7 @@ var builder = {
         };
 
         if (!out.host.match(/^\w+:\/\//)) {
-            out.host = (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
+            out.host = out.host && (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
         }
 
         var _sdkMethodNames = [];
@@ -457,6 +457,7 @@ var builder = {
         args = _.clone(execArgs);
         args.unshift('get:swagger');
         args.unshift(executable);
+        args.unshift('--preserve-symlinks');
 
         if (!~args.indexOf('-f') && !~args.indexOf('--file')) {
             args.push('--file');
