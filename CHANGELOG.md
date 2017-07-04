@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.0.2
 
 * [FIXED] - spawn node process with `--preserve-symlinks` flag
 * [FIXED] - when no default service host is set, an Error should be throwed when a SDK constructor is called without the `baseURL` option
