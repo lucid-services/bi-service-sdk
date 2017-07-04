@@ -293,7 +293,7 @@ var builder = {
         };
 
         if (!out.host.match(/^\w+:\/\//)) {
-            out.host = (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
+            out.host = out.host && (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
         }
 
         var _sdkMethodNames = [];

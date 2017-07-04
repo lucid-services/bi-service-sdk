@@ -21,6 +21,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 var context = {{{context}}};
+var HAS_HOST = context.host ? true : false;
 
 describe('index.js', function() {
     it(`should export SDK verion ${context.version}`, function() {
@@ -30,13 +31,34 @@ describe('index.js', function() {
 
 describe(context.moduleName, function() {
 
+    before(function() {
+        this.buildSDK = function() {
+            if (HAS_HOST) {
+                return new sdk;
+            }
+            return new sdk({baseURL: 'localhost'});
+        };
+
+        if (!HAS_HOST) {
+            context.host = 'localhost';
+        }
+    });
+
+    if (!HAS_HOST) {
+        it('should throw an Error when `baseURL` option is not set', function() {
+            expect(function() {
+                new sdk({baseURL: undefined});
+            }).to.throw(Error);
+        });
+    }
+
     it('should export constructor object which inherits from BIServiceSDK interface', function() {
         sdk.should.be.instanceof(Function);
-        (new sdk).should.be.instanceof(sdkInterface.BIServiceSDK);
+        (this.buildSDK()).should.be.instanceof(sdkInterface.BIServiceSDK);
     });
 
     it(`should have "version" property equal to ${context.version}`, function() {
-        (new sdk).version.should.be.equal(context.version);
+        (this.buildSDK()).version.should.be.equal(context.version);
     });
 
     it('should call parent BIServiceSDK constructor with already prepared `options` object', function() {
@@ -50,7 +72,7 @@ describe(context.moduleName, function() {
             });
         });
 
-        var client = new sdk;
+        var client = this.buildSDK();
 
         sdkInterfaceConstructorStub.should.have.been.calledOnce;
         sdkInterfaceConstructorStub.restore();
@@ -59,7 +81,7 @@ describe(context.moduleName, function() {
     describe('SDK methods', function() {
 
         beforeEach(function() {
-            this.sdk = new sdk;
+            this.sdk = this.buildSDK();
             this.requestStub = sinon.stub(this.sdk.axios, 'request').returns(Promise.resolve({}));
         });
 

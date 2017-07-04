@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## FUTURE
 
 * [FIXED] - spawn node process with `--preserve-symlinks` flag
+* [FIXED] - when no default service host is set, an Error should be throwed when a SDK constructor is called without the `baseURL` option
 
 ## 1.0.1
 

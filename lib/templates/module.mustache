@@ -13,7 +13,12 @@ function {{{moduleName}}}(options) {
     options = options || {};
 
     if (!options.baseURL) {
+        {{#host}}
         options.baseURL = "{{{host}}}";
+        {{/host}}
+        {{^host}}
+        throw new Error('`baseURL` string option is required');
+        {{/host}}
     }
 
     this.version = "{{{version}}}";
