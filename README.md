@@ -14,18 +14,18 @@ services: {
 
 ### Initialization
 ```javascript
-    var DepotPublicSDK = require('bi-depot-public-sdk');
+    var DepotPrivateSDK = require('bi-depot-private-sdk');
 
     var service = new Service;
     var remoteServiceMgr = service.remoteServiceManager;
 
-    //1. Looks for `services.depot.private.npm` option value in app's config
+    //1. Looks for `services.depot.private.npm` option value in config
     //2. Loads `bi-depot-private-sdk` npm module
     //3. Initializes the SDK, saves it into internal register and returns the SDK object
     remoteServiceMgr.buildRemoteService('depot:s2s:v1.0', {/*sdk constructor options*/});
 
     //Manual initialization
-    var sdk = new DepotPublicSDK({
+    var sdk = new DepotPrivateSDK({
             errors: { // map custom Error constructors to request response codes
             400: RequestError,
             500: ServiceError
