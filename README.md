@@ -1,14 +1,12 @@
 
 ### config.json5
 ```javascript
-app: {
-    services: {
-        depot: {
-            private: {
-                host: '127.0.0.1:3000',
-                ssl: false,
-                npm: 'bi-depot-private-sdk'
-            }
+services: {
+    depot: {
+        private: {
+            host: '127.0.0.1:3000',
+            ssl: false,
+            npm: 'bi-depot-private-sdk'
         }
     }
 }
