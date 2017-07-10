@@ -14,10 +14,10 @@ services: {
 
 ### Initialization
 ```javascript
-    var DepotPrivateSDK = require('bi-depot-private-sdk');
+    var DepotPrivateSDK = require('bi-depot-private-sdk')['v1.0'];
 
-    var service = new Service;
-    var remoteServiceMgr = service.remoteServiceManager;
+    var service = new Service(config);
+    var remoteServiceMgr = service.getRemoteServiceManager();
 
     //1. Looks for `services.depot.private.npm` option value in config
     //2. Loads `bi-depot-private-sdk` npm module
