@@ -1,0 +1,12 @@
+{
+    "name": "bi-test",
+    "version": "1.0.0",
+    "description": "A mock of bi-service app used for testing purposes",
+    "main": "index.js",
+    "keywords": [
+        "test",
+        "bi-service"
+    ],
+    "author": "Bohemia Interactive",
+    "private": false
+}

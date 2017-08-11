@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.0.3
+
+* [ADDED] - cli acceptance tests
+* [ADDED] - print info about tmp build directory location
+
 ## 1.0.2
 
 * [FIXED] - spawn node process with `--preserve-symlinks` flag
