@@ -17,6 +17,15 @@
         "sdk",
         "API"
     ],
+    "engines" : {
+       "node" : ">=4.0.0"
+    },
+    "files": [
+        "bin",
+        "lib",
+        "tests",
+        "index.js"
+    ],
     "author": "Bohemia Interactive",
     "private": false,
     "dependencies": {
