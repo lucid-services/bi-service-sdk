@@ -5,8 +5,8 @@
     "main": "index.js",
     "bin": "./bin/bi-service-sdk.js",
     "scripts": {
-        "test": "export NODE_ENV=test; ./node_modules/mocha/bin/_mocha --recursive --ui tdd -t 16000 -R spec tests/acceptance",
-        "coverage": "export NODE_ENV=test; istanbul cover -x ./bin/bi-service-sdk.js node_modules/mocha/bin/_mocha -- --recursive --ui tdd -t 16000 -R spec tests/acceptance"
+        "test": "export NODE_ENV=test; ./node_modules/mocha/bin/_mocha --recursive --ui tdd -t 16000 -R spec tests/acceptance tests/unit",
+        "coverage": "export NODE_ENV=test; istanbul cover -x ./bin/bi-service-sdk.js node_modules/mocha/bin/_mocha -- --recursive --ui tdd -t 16000 -R spec tests/acceptance tests/unit"
     },
     "testFramework": "mocha",
     "keywords": [
