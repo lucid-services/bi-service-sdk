@@ -5,8 +5,8 @@ var chaiAsPromised = require('chai-as-promised');
 var sinonChai      = require("sinon-chai");
 var axios          = require('axios');
 
-var SDKRequestError = require('../lib/errors/SDKRequestError.js');
-var sdk             = require('../index.js');
+var SDKRequestError = require('../../lib/errors/SDKRequestError.js');
+var sdk             = require('../../index.js');
 var BIServiceSDK    = sdk.BIServiceSDK;
 
 //this makes sinon-as-promised available in sinon:

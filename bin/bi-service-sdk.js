@@ -33,6 +33,8 @@ var builder = {
         //builded sdk npm pckgs
         var packages = [];
 
+        console.info(`Build tmp directory: ${tmpDir.name}`);
+
         //for each app - build sdk npm package with http API versions bundled in
         //separate files
         Object.keys(specs).forEach(function(appName) {
@@ -162,6 +164,7 @@ var builder = {
 
         var npmArgs = [
             'install',
+            'mocha',
             'bluebird',
             'bi-service-sdk',
             'sinon@^1.17.3',
@@ -213,11 +216,9 @@ var builder = {
                 '--reporter', 'spec', "tests/**/*.js"];
 
         var mochaCmd = process.platform === 'win32' ? 'mocha.cmd' : 'mocha';
+        mochaCmd = path.resolve(projectRoot + '/node_modules/.bin/' + mochaCmd);
 
-        var proc = childProcess.spawn(mochaCmd,
-            mochaArgs,
-            {cwd: projectRoot}
-        );
+        var proc = childProcess.spawn(mochaCmd, mochaArgs, {cwd: projectRoot});
 
         if (vLevel >= 1) {
             console.info(`${projectRoot} - running tests`);
@@ -497,7 +498,7 @@ var builder = {
 
 module.exports = Object.create(builder);
 
-//run only if this module isn't required be other node module
+//run only if this module isn't required by other node module
 if (module.parent === null) {
 
     var argv = yargs
