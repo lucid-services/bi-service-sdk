@@ -26,6 +26,7 @@
         "tests",
         "index.js"
     ],
+    "license": "GPL-3.0",
     "author": "Bohemia Interactive",
     "private": false,
     "dependencies": {
