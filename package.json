@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "bi-service-doc": "^0.9.5",
-        "bi-service": "^0.16.1",
+        "bi-service": "^1.0.0-alpha.8",
         "bi-config": "^1.2.0",
         "archiver": "^1.3.0",
         "bluebird": "^3.5.0",
