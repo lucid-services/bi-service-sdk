@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/BohemiaInteractive/bi-service-sdk.svg?branch=master)](https://travis-ci.org/BohemiaInteractive/bi-service-sdk)  
 
 ### Generating a SDK npm package for a `bi-service` based application
 
