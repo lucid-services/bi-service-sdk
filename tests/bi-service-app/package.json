@@ -7,6 +7,9 @@
         "test",
         "bi-service"
     ],
+    "dependencies": {
+        "bi-service": "^1.0.0-alpha.8"
+    },
     "author": "Bohemia Interactive",
     "private": false
 }

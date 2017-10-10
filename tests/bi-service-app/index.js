@@ -4,32 +4,39 @@
  * shell executable
  */
 
-var Service = require('bi-service');
-var config = require('bi-config');
+const Service = require('bi-service');
+const config  = require('bi-config');
+const path    = require('path');
 
-var service = module.exports = new Service(config);
+config.initialize({fileConfigPath: path.resolve(__dirname + '/config.json5')});
+
+const service = module.exports = new Service(config);
 
 service.on('set-up', function() {
     //app1
-    this.buildApp('app1', {validator: {definitions: {}}}).buildRouter({
+    this.buildApp('app1', {}).buildRouter({
         url: '/',
         version: 1
     }).buildRoute({
         url: '/',
         type: 'get'
     }).validate({
-        id: {$is: Number}
+        properties: {
+            id: {type: 'integer'}
+        }
     }, 'query');
 
 });
 
 //app2
-service.buildApp('app2', {validator: {definitions: {}}}).buildRouter({
+service.buildApp('app2', {}).buildRouter({
     url: '/',
     version: 2
 }).buildRoute({
     url: '/:id',
     type: 'put'
 }).validate({
-    id: {$is: Number}
+    properties: {
+        id: {type: 'integer'}
+    }
 }, 'params');

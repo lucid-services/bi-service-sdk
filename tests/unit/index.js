@@ -175,7 +175,7 @@ describe('BIServiceSDK', function() {
             });
 
             it('should convert error response properties to camelCase', function() {
-                var requestStub = sinon.stub(this.sdk.axios.defaults, 'adapter').returns(Promise.reject({
+                var requestStub = sinon.stub(this.sdk.axios.defaults, 'adapter').rejects({
                     message: 'rejection test error',
                     response: {
                         status: status,
@@ -186,7 +186,7 @@ describe('BIServiceSDK', function() {
                             another_property: 'value'
                         }
                     }
-                }));
+                });
 
                 return this.sdk.$request({url: `status/${status}`}).should.be.rejected.then(function(err) {
                     err.should.have.property('apiCode', 'rejectionTest');
@@ -338,7 +338,7 @@ describe('BIServiceSDK', function() {
                     };
 
                     this.sdk._setReqData('foo', reqData, config, 'headers');
-                    config.should.have.deep.property('headers.foo', reqData);
+                    config.should.have.nested.deep.property('headers.foo', reqData);
                 });
 
                 it(`should set data under "config.headers.foo" key when we provide "foo" as the key and "headers" as the target (2)`, function() {
@@ -407,7 +407,7 @@ describe('BIServiceSDK', function() {
                         };
 
                         this.sdk._setReqData('foo', reqData, config, target);
-                        config.should.have.deep.property('params.foo', reqData);
+                        config.should.have.nested.deep.property('params.foo', reqData);
                     });
 
                     it(`should set data under "config.params.foo" key when we provide "foo" as the key and "${target}" as the target (2)`, function() {
@@ -476,7 +476,7 @@ describe('BIServiceSDK', function() {
                     };
 
                     this.sdk._setReqData('foo', reqData, config, 'query');
-                    config.should.have.deep.property('params.foo', reqData);
+                    config.should.have.nested.deep.property('params.foo', reqData);
                 });
 
                 it(`should set data under "config.params.foo" key when we provide "foo" as the key and "query" as the target (2)`, function() {
