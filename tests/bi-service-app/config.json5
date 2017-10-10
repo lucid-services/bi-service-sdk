@@ -1,8 +1,8 @@
 {
     apps: {
         app1: {
-            baseUrl: '127.0.0.1',
-            listen: null,
+            baseUrl: 'http://127.0.0.1',
+            listen: 1,
             bodyParser: {
                 json: {
                     extended: true,
@@ -12,8 +12,8 @@
             },
         },
         app2: {
-            baseUrl: '127.0.0.1',
-            listen: null,
+            baseUrl: 'http://127.0.0.1',
+            listen: 2,
             bodyParser: {
                 json: {
                     extended: true,
