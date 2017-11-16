@@ -2,10 +2,12 @@ var axios       = require('axios');
 var toCamelCase = require('lodash.camelcase');
 
 var SDKRequestError = require('./lib/errors/SDKRequestError.js');
+var SDKInterface    = require('./lib/interface.js');
 
-module.exports                 = BIServiceSDK;
-module.exports.BIServiceSDK    = BIServiceSDK;
-module.exports.SDKRequestError = SDKRequestError;
+module.exports                       = BIServiceSDK;
+module.exports.BIServiceSDK          = BIServiceSDK;
+module.exports.BIServiceSDKInterface = SDKInterface;
+module.exports.SDKRequestError       = SDKRequestError;
 
 /**
  * @constructor
@@ -63,6 +65,10 @@ function BIServiceSDK(options) {
         return Promise.reject(err);
     });
 };
+
+BIServiceSDK.prototype = Object.create(BIServiceSDK.prototype, {
+    constructor: BIServiceSDK
+});
 
 
 /**

@@ -77,11 +77,20 @@ var builder = {
 
             Object.keys(specs[appName]).forEach(function(version) {
 
+                var tmplType = 'http';
                 var spec = specs[appName][version];
                 var context = self.getTemplateContext(spec, package);
                 context.context = JSON.stringify(context);
-                var sdkModule = self.renderTemplate('module', context);
-                var sdkTests = self.renderTemplate('test', context);
+
+                if (spec.schemes instanceof Array
+                    && ~spec.schemes.indexOf('amqp')
+                    && ~spec.schemes.indexOf('amqps')
+                ) {
+                    tmplType = 'amqp';
+                }
+
+                var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
+                var sdkTests = self.renderTemplate(`${tmplType}/test`, context);
 
                 self.lintSource(sdkModule);
                 fs.writeFileSync(subdir + `/${version}.js`, sdkModule);
@@ -293,7 +302,10 @@ var builder = {
             paths      : []
         };
 
-        if (!out.host.match(/^\w+:\/\//)) {
+        if (spec.schemes instanceof Array
+            && (~spec.schemes.indexOf('http') || ~spec.schemes.indexOf('https'))
+            && !out.host.match(/^\w+:\/\//)
+        ) {
             out.host = out.host && (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
         }
 
@@ -314,7 +326,7 @@ var builder = {
 
 
                 var def = {
-                    sdkMethodName : route.sdkMethodName,
+                    sdkMethodName : route['x-sdkMethodName'] || route.sdkMethodName,
                     hasBody       : ~['post', 'put', 'delete'].indexOf(method.toLowerCase()),
                     operationId   : route.operationId,
                     tags          : route.tags,
@@ -339,8 +351,12 @@ var builder = {
 
                 self.sanitizePathParams(def.pathParams);
 
-                if (~_sdkMethodNames.indexOf(route.sdkMethodName)) {
+                if (~_sdkMethodNames.indexOf(def.sdkMethodName)) {
                     throw new Error(`Duplicate route sdk method name: ${route.sdkMethodName}`);
+                }
+
+                if (route.hasOwnProperty('x-amqp')) {//for AMQP Route definitions
+                    def.amqp = route['x-amqp'];
                 }
 
                 _sdkMethodNames.push(route.sdkMethodName);

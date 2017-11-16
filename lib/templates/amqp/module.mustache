@@ -1,0 +1,90 @@
+'use strict';
+
+var SDKInterface = module.require('bi-service-sdk').BIServiceSDKInterface;
+
+module.exports = {{{moduleName}}};
+
+
+/**
+ * @constructor
+ * @param {Object} options
+ * @param {Context} options.socket - `Context` connection object - see affiliated `bi-rabbitmq` package
+ * @param {String} options.baseURL
+ * @name {{{moduleName}}}
+ */
+function {{{moduleName}}}(options) {
+    var context;
+    options = options || {};
+
+    this.version = "{{{version}}}";
+    this.baseURL = "{{{basePath}}}";
+
+    this.socket = options.socket;
+    this.$context = {};
+
+    //options object must be ready before we call the parent constructor
+    SDKInterface.call(this, options);
+
+    {{#paths}}
+    // @operationId {{{operationId}}}
+    context = this.create("{{{method}}}", {
+        persistent: JSON.parse(!!"{{{amqp.persistent}}}"),
+        noCreate: JSON.parse(!!"{{{amqp.noCreate}}}"),
+        expiration: JSON.parse(!!"{{{amqp.expiration}}}"),
+        contentType: '{{{amqp.contentType}}}',
+        {{#amqp.routing}}
+        routing: '{{{amqp.routing}}}',//pub/sub
+        {{/amqp.routing}}
+        {{#amqp.topic}}
+        topic: '{{{amqp.topic}}}',//pub
+        {{/amqp.topic}}
+        {{#amqp.task}}
+        task: '{{{amqp.task}}}',//task
+        {{/amqp.task}}
+    });
+    context.connect(this.baseURL + "{{{url}}}", noop);
+    this.register(
+        "{{{sdkMethodName}}}",
+        context
+    );
+    {{/paths}}
+
+    function noop() {}
+}
+
+{{{moduleName}}}.prototype = Object.create(SDKInterface.prototype);
+{{{moduleName}}}.prototype.constructor = {{{moduleName}}};
+
+/**
+ * @param {String} type
+ * @param {Object} options
+ * @return {Object}
+ */
+{{{moduleName}}}.prototype.create = function(type, options) {
+    type = type + '';
+    return this.socket.socket(type.toUpperCase(), options);
+};
+
+/**
+ * @param {String} contextName - sdkMethodName
+ * @return {Object}
+ */
+{{{moduleName}}}.prototype.get = function(contextName) {
+
+    if (!this.$context.hasOwnProperty(contextName)) {
+        throw new Error('Socket context:' + contextName + ' not found');
+    }
+
+    return this.$context[contextName];
+};
+
+/**
+ * @param {String} contextName - sdkMethodName
+ * @param {Socket} socket
+ * @return {{openbrace}}{{{moduleName}}}{{closebrace}} - self
+ */
+{{{moduleName}}}.prototype.register = function(contextName, socket) {
+
+    this.$context[contextName] = socket;
+    return this;
+};
