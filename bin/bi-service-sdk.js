@@ -39,12 +39,20 @@ var builder = {
         //separate files
         Object.keys(specs).forEach(function(appName) {
             var files = [];
+            var tmplType = 'http';
             var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
             var buildedPackage = {
                 dir: subdir,
                 filename: `${package.name}-${appName}-${package.version}.zip`,
                 files: files,
             };
+
+            if (specs[appName].schemes instanceof Array
+                && ~spec[appName].schemes.indexOf('amqp')
+                && ~spec[appName].schemes.indexOf('amqps')
+            ) {
+                tmplType = 'amqp';
+            }
 
             packages.push(buildedPackage);
             fs.mkdirSync(subdir);
@@ -53,7 +61,7 @@ var builder = {
             var sdkIndex = self.renderTemplate('index', {
                 versions: Object.keys(specs[appName])
             });
-            var sdkPackage = self.renderTemplate('package',
+            var sdkPackage = self.renderTemplate(`${tmplType}/package`,
                 _.merge(
                     {appName: appName},
                     package,
@@ -77,17 +85,9 @@ var builder = {
 
             Object.keys(specs[appName]).forEach(function(version) {
 
-                var tmplType = 'http';
                 var spec = specs[appName][version];
                 var context = self.getTemplateContext(spec, package);
                 context.context = JSON.stringify(context);
-
-                if (spec.schemes instanceof Array
-                    && ~spec.schemes.indexOf('amqp')
-                    && ~spec.schemes.indexOf('amqps')
-                ) {
-                    tmplType = 'amqp';
-                }
 
                 var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
                 var sdkTests = self.renderTemplate(`${tmplType}/test`, context);
