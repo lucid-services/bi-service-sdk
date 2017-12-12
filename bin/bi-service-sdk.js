@@ -35,11 +35,11 @@ var builder = {
 
         console.info(`Build tmp directory: ${tmpDir.name}`);
 
-        //for each app - build sdk npm package with http API versions bundled in
+        //for each app - build sdk npm package with API versions bundled in
         //separate files
         Object.keys(specs).forEach(function(appName) {
             var files = [];
-            var tmplType = 'http';
+            var tmplType = null;
             var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
             var buildedPackage = {
                 dir: subdir,
@@ -47,11 +47,22 @@ var builder = {
                 files: files,
             };
 
-            if (specs[appName].schemes instanceof Array
-                && ~spec[appName].schemes.indexOf('amqp')
-                && ~spec[appName].schemes.indexOf('amqps')
-            ) {
-                tmplType = 'amqp';
+            let _spec = _.values(specs[appName]).shift();
+            if (_spec && _spec.schemes instanceof Array) {
+                if (   ~_spec.schemes.indexOf('amqp')
+                    || ~_spec.schemes.indexOf('amqps')
+                ) {
+                    tmplType = 'amqp';
+                } else if (   ~_spec.schemes.indexOf('http')
+                    || ~_spec.schemes.indexOf('https')
+                ) {
+                    tmplType = 'http';
+                }
+            }
+
+            //unsupported API specification
+            if (!tmplType) {
+                return;
             }
 
             packages.push(buildedPackage);
