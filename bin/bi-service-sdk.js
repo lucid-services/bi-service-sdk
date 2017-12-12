@@ -39,12 +39,20 @@ var builder = {
         //separate files
         Object.keys(specs).forEach(function(appName) {
             var files = [];
+            var tmplType = 'http';
             var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
             var buildedPackage = {
                 dir: subdir,
                 filename: `${package.name}-${appName}-${package.version}.zip`,
                 files: files,
             };
+
+            if (specs[appName].schemes instanceof Array
+                && ~spec[appName].schemes.indexOf('amqp')
+                && ~spec[appName].schemes.indexOf('amqps')
+            ) {
+                tmplType = 'amqp';
+            }
 
             packages.push(buildedPackage);
             fs.mkdirSync(subdir);
@@ -53,7 +61,7 @@ var builder = {
             var sdkIndex = self.renderTemplate('index', {
                 versions: Object.keys(specs[appName])
             });
-            var sdkPackage = self.renderTemplate('package',
+            var sdkPackage = self.renderTemplate(`${tmplType}/package`,
                 _.merge(
                     {appName: appName},
                     package,
@@ -80,8 +88,9 @@ var builder = {
                 var spec = specs[appName][version];
                 var context = self.getTemplateContext(spec, package);
                 context.context = JSON.stringify(context);
-                var sdkModule = self.renderTemplate('module', context);
-                var sdkTests = self.renderTemplate('test', context);
+
+                var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
+                var sdkTests = self.renderTemplate(`${tmplType}/test`, context);
 
                 self.lintSource(sdkModule);
                 fs.writeFileSync(subdir + `/${version}.js`, sdkModule);
@@ -293,7 +302,10 @@ var builder = {
             paths      : []
         };
 
-        if (!out.host.match(/^\w+:\/\//)) {
+        if (spec.schemes instanceof Array
+            && (~spec.schemes.indexOf('http') || ~spec.schemes.indexOf('https'))
+            && !out.host.match(/^\w+:\/\//)
+        ) {
             out.host = out.host && (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
         }
 
@@ -314,7 +326,7 @@ var builder = {
 
 
                 var def = {
-                    sdkMethodName : route.sdkMethodName,
+                    sdkMethodName : route['x-sdkMethodName'] || route.sdkMethodName,
                     hasBody       : ~['post', 'put', 'delete'].indexOf(method.toLowerCase()),
                     operationId   : route.operationId,
                     tags          : route.tags,
@@ -339,8 +351,12 @@ var builder = {
 
                 self.sanitizePathParams(def.pathParams);
 
-                if (~_sdkMethodNames.indexOf(route.sdkMethodName)) {
+                if (~_sdkMethodNames.indexOf(def.sdkMethodName)) {
                     throw new Error(`Duplicate route sdk method name: ${route.sdkMethodName}`);
+                }
+
+                if (route.hasOwnProperty('x-amqp')) {//for AMQP Route definitions
+                    def.amqp = route['x-amqp'];
                 }
 
                 _sdkMethodNames.push(route.sdkMethodName);
