@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.1.0
 
 * [FIXED] - we shouldn't try to build a sdk for unsupported API specification (determined via API protocol)
 * [FIXED] - AMQP client sdk was failing to build due to multiple semantic errors
