@@ -28,8 +28,9 @@ function {{{moduleName}}}(options) {
     ServiceSDK.call(this, options);
 }
 
-{{{moduleName}}}.prototype = Object.create(ServiceSDK.prototype);
-{{{moduleName}}}.prototype.constructor = {{{moduleName}}};
+{{{moduleName}}}.prototype = Object.create(ServiceSDK.prototype, {
+    constructor: {{{moduleName}}}
+});
 
 {{#paths}}
 /**

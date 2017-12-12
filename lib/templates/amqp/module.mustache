@@ -28,9 +28,9 @@ function {{{moduleName}}}(options) {
     {{#paths}}
     // @operationId {{{operationId}}}
     context = this.create("{{{method}}}", {
-        persistent: JSON.parse(!!"{{{amqp.persistent}}}"),
-        noCreate: JSON.parse(!!"{{{amqp.noCreate}}}"),
-        expiration: JSON.parse(!!"{{{amqp.expiration}}}"),
+        persistent: JSON.parse("{{{amqp.persistent}}}" || false),
+        noCreate: JSON.parse("{{{amqp.noCreate}}}" || false),
+        expiration: JSON.parse("{{{amqp.expiration}}}" || false),
         contentType: '{{{amqp.contentType}}}',
         {{#amqp.routing}}
         routing: '{{{amqp.routing}}}',//pub/sub
@@ -52,8 +52,9 @@ function {{{moduleName}}}(options) {
     function noop() {}
 }
 
-{{{moduleName}}}.prototype = Object.create(SDKInterface.prototype);
-{{{moduleName}}}.prototype.constructor = {{{moduleName}}};
+{{{moduleName}}}.prototype = Object.create(SDKInterface.prototype, {
+    constructor: {{{moduleName}}}
+});
 
 /**
  * @param {String} type
