@@ -66,7 +66,7 @@ function BIServiceSDK(options) {
     });
 };
 
-BIServiceSDK.prototype = Object.create(BIServiceSDK.prototype, {
+BIServiceSDK.prototype = Object.create(SDKInterface.prototype, {
     constructor: BIServiceSDK
 });
 
