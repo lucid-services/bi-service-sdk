@@ -94,7 +94,7 @@ describe('bin/bi-service-sdk', function() {
                 '--service',
                 path.resolve(this.tmpDir.name + '/bi-service-app'),
                 '--doc-exec',
-                require.resolve('bi-service-doc/bin/bi-service-doc'),
+                './bi-service-app/node_modules/.bin/bi-service-doc',
                 '--tests',
                 true,
                 '--',
