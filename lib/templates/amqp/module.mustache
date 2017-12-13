@@ -52,9 +52,8 @@ function {{{moduleName}}}(options) {
     function noop() {}
 }
 
-{{{moduleName}}}.prototype = Object.create(SDKInterface.prototype, {
-    constructor: {{{moduleName}}}
-});
+{{{moduleName}}}.prototype = Object.create(SDKInterface.prototype);
+{{{moduleName}}}.prototype.constructor = {{{moduleName}}};
 
 /**
  * @param {String} type
