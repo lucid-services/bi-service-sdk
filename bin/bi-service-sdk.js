@@ -48,8 +48,6 @@ var builder = {
             };
 
             let _spec = _.values(specs[appName]).shift();
-            console.log('===============SCHEMES==========')
-            console.log(_spec.schemes)
             if (_spec && _spec.schemes instanceof Array) {
                 if (   ~_spec.schemes.indexOf('amqp')
                     || ~_spec.schemes.indexOf('amqps')
