@@ -106,6 +106,9 @@ describe('bin/bi-service-sdk', function() {
         it('should create two zipped SDK packages in provided cwd directory', function() {
             this.result.status.should.be.equal(0);
 
+            console.log('*******FILES******');
+            console.log(this.sdk1FilePath);
+            console.log(this.sdk2FilePath);
             var sdk1 = fs.statSync(this.sdk1FilePath);
             var sdk2 = fs.statSync(this.sdk2FilePath);
 
@@ -119,6 +122,8 @@ describe('bin/bi-service-sdk', function() {
         it('should print progress messages to stdout', function() {
             var stdout = this.result.stdout.toString();
 
+            console.log('*******STDOUT******');
+            console.log(stdout);
             stdout.should.match(/preparing testing environment/);
             stdout.should.match(/npm install mocha/);
             stdout.should.match(/running tests/);
