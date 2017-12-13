@@ -3,19 +3,18 @@
 ### Generating a SDK npm package for a `bi-service` based application
 
 * Your project's `index.js` must export the `Service` instance object.  
-* Also if `bi-service-sdk` package is installed globally, you have to manually install `development` dependencies for the package.
+* Also you HAVE TO manually install `development` dependencies for the package.
 
 ```bash
-> npm i -g bi-service-sdk
-> npm i -g bi-service-doc
-
 > cd ./path/to/my/bi-service-project
+> npm i bi-service-sdk
+> npm i bi-service-doc
 # generates SDKs into zip packages in cwd
-> bi-service-sdk -e "$(which bi-service-doc)" -- -f index.js
+> ./node_modules/.bin/bi-service-sdk -e "./node_modules/.bin/bi-service-doc" -- -f index.js
 
 > # eventually
-> bi-service-sdk --help
-> bi-service-doc --help
+> ./node_modules/.bin/bi-service-sdk --help
+> ./node_modules/.bin/bi-service-doc --help
 ```
 
 
