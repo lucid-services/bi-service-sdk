@@ -101,9 +101,6 @@ describe('bin/bi-service-sdk', function() {
                 '--config',
                 path.resolve(this.tmpDir.name + '/bi-service-app/config.json5')
             ]);
-            console.log('**********************');
-            console.log(this.result.stdout.toString());
-            console.log(this.result.stderr.toString());
         });
 
         it('should create two zipped SDK packages in provided cwd directory', function() {

@@ -1,6 +1,9 @@
 const BIServiceSDK    = require('./lib/http.js');
 const SDKRequestError = require('./lib/errors/SDKRequestError.js');
 const SDKInterface    = require('./lib/interface.js');
+const _               = require('lodash');
+const tmp             = require('tmp');
+
 let Service, ServiceDoc, bin;
 
 module.exports                       = BIServiceSDK;
@@ -24,7 +27,17 @@ try {
 }
 
 function registerShellCommands(yargs) {
+    const appManager = this.appManager;
+    const config     = this.config;
+
     yargs.command('build:sdk', 'Generate client SDKs', {
+        app: {
+            alias: 'a',
+            describe: 'app name restrictions',
+            type: 'string',
+            default: [],
+            array: true,
+        },
         tests: {
             alias: 'test',
             describe: 'Runs automated tests on builded SDKs',
@@ -52,5 +65,70 @@ function registerShellCommands(yargs) {
             count: true,
             type: 'boolean'
         },
-    }, runCmd);
+    }, buildCmd);
+
+    function buildCmd(argv) {
+        if (argv.cleanup) {
+            tmp.setGracefulCleanup();
+        }
+        const package  = {
+            name    : config.getOrFail('npmName'),
+            version : require(config.getOrFail('root')).version,
+        };
+        const specs    = getSpecs(appManager, argv.app);
+        //tmp dir used to build the sdks
+        const tmpDir   = tmp.dirSync({
+            unsafeCleanup: true,
+            keep: argv.cleanup ? false : true
+        });
+        //builded sdk npm pckgs
+        const packages = [];
+
+        console.info(`Build tmp directory: ${tmpDir.name}`);
+
+        //for each app - build sdk npm package with API versions bundled in
+        //separate files
+        Object.keys(specs).forEach(function(appName) {
+            packages.push(
+                bin.build(appName, specs[appName], package, tmpDir)
+            );
+        });
+
+        return bin.bundle(packages, tmpDir, argv);
+    }
+}
+
+/**
+ * @return {AppManager} appManager
+ * @return {Array<String>} apps
+ * @return {Object}
+ */
+function getSpecs(appManager, apps) {
+    apps = apps || [];
+
+    if (!apps.length) {
+        //no specific apps were listed by an user so generate specs
+        //for all available apps
+        apps = _.map(appManager.apps, 'options.name');
+    }
+
+    const specs = {};
+
+    appFilter(appManager.apps, apps).reduce(function(specs, app) {
+        specs[app.options.name] = ServiceDoc.swagger.generate(app);
+        return specs;
+    }, specs);
+
+    return specs;
+}
+
+/**
+ * @param {Array<AppInterface>} apps
+ * @param {Array<String>} whitelist
+ * @return {Array<AppInterface>}
+ */
+function appFilter(apps, whitelist) {
+    return apps.filter(function(app) {
+        return app && whitelist.indexOf(app.options.name) !== -1;
+    });
 }
