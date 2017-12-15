@@ -38,81 +38,22 @@ var builder = {
         //for each app - build sdk npm package with API versions bundled in
         //separate files
         Object.keys(specs).forEach(function(appName) {
-            var files = [];
-            var tmplType = null;
-            var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
-            var buildedPackage = {
-                dir: subdir,
-                filename: `${package.name}-${appName}-${package.version}.zip`,
-                files: files,
-            };
-
-            let _spec = _.values(specs[appName]).shift();
-            if (_spec && _spec.schemes instanceof Array) {
-                if (   ~_spec.schemes.indexOf('amqp')
-                    || ~_spec.schemes.indexOf('amqps')
-                ) {
-                    tmplType = 'amqp';
-                } else if (   ~_spec.schemes.indexOf('http')
-                    || ~_spec.schemes.indexOf('https')
-                ) {
-                    tmplType = 'http';
-                }
-            }
-
-            //unsupported API specification
-            if (!tmplType) {
-                return;
-            }
-
-            packages.push(buildedPackage);
-            fs.mkdirSync(subdir);
-            fs.mkdirSync(subdir + '/tests');
-
-            var sdkIndex = self.renderTemplate('index', {
-                versions: Object.keys(specs[appName])
-            });
-            var sdkPackage = self.renderTemplate(`${tmplType}/package`,
-                _.merge(
-                    {appName: appName},
-                    package,
-                    {version: self.getSDKPackageVersion(SDK_VERSION, package.version)}
-                ));
-
-            self.lintSource(sdkIndex);
-            self.lintSource(sdkPackage);
-
-            fs.writeFileSync(subdir + '/index.js', sdkIndex);
-            fs.writeFileSync(subdir + '/package.json', sdkPackage);
-
-            files.push({
-                dir: subdir,
-                name: 'index.js'
-            });
-            files.push({
-                dir: subdir,
-                name: 'package.json'
-            });
-
-            Object.keys(specs[appName]).forEach(function(version) {
-
-                var spec = specs[appName][version];
-                var context = self.getTemplateContext(spec, package);
-                context.context = JSON.stringify(context);
-
-                var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
-                var sdkTests = self.renderTemplate(`${tmplType}/test`, context);
-
-                self.lintSource(sdkModule);
-                fs.writeFileSync(subdir + `/${version}.js`, sdkModule);
-                fs.writeFileSync(subdir + `/tests/${version}.js`, sdkTests);
-                files.push({
-                    dir: subdir,
-                    name: `${version}.js`
-                });
-            });
+            packages.push(
+                self.build(appName, specs[appName], package, tmpDir)
+            );
         });
 
+        return self.bundle(packages, tmpDir, argv);
+    },
+
+    /**
+     * @param {Array<Object>} packages
+     * @param {Object} tmpDir
+     * @param {Object} argv
+     * @return {Promise}
+     */
+    bundle: function bundle(packages, tmpDir, argv) {
+        const self = this;
         // verify integrity of SDKs (tests) and bundle each created npm package
         // in separate zip file -> export to cwd
         return Promise.each(packages, function(package) {
@@ -146,6 +87,97 @@ var builder = {
                 console.info('Done.');
             }
         });
+    },
+
+    /**
+     * @param {Object} specs
+     * @return {String}
+     */
+    getTemplateType: function getTemplateType(specs) {
+        let _spec = _.values(specs).shift();
+        if (_spec && _spec.schemes instanceof Array) {
+            if (   ~_spec.schemes.indexOf('amqp')
+                || ~_spec.schemes.indexOf('amqps')
+            ) {
+                return 'amqp';
+            } else if (   ~_spec.schemes.indexOf('http')
+                || ~_spec.schemes.indexOf('https')
+            ) {
+                return 'http';
+            }
+        }
+    },
+
+    /**
+     * @param {String} appName
+     * @param {Object} specs
+     * @param {Object} package
+     * @param {Object} tmpDir
+     * @return {Object} package bundle
+     */
+    build: function build(appName, specs, package, tmpDir) {
+        const self = this;
+        var files = [];
+        var tmplType = self.getTemplateType(specs);
+        var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
+        var buildedPackage = {
+            dir: subdir,
+            filename: `${package.name}-${appName}-${package.version}.zip`,
+            files: files,
+        };
+
+        //unsupported API specification
+        if (!tmplType) {
+            return;
+        }
+
+        fs.mkdirSync(subdir);
+        fs.mkdirSync(subdir + '/tests');
+
+        var sdkIndex = self.renderTemplate('index', {
+            versions: Object.keys(specs)
+        });
+        var sdkPackage = self.renderTemplate(`${tmplType}/package`,
+            _.merge(
+                {appName: appName},
+                package,
+                {version: self.getSDKPackageVersion(SDK_VERSION, package.version)}
+            ));
+
+        self.lintSource(sdkIndex);
+        self.lintSource(sdkPackage);
+
+        fs.writeFileSync(subdir + '/index.js', sdkIndex);
+        fs.writeFileSync(subdir + '/package.json', sdkPackage);
+
+        files.push({
+            dir: subdir,
+            name: 'index.js'
+        });
+        files.push({
+            dir: subdir,
+            name: 'package.json'
+        });
+
+        Object.keys(specs).forEach(function(version) {
+
+            var spec = specs[version];
+            var context = self.getTemplateContext(spec, package);
+            context.context = JSON.stringify(context);
+
+            var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
+            var sdkTests = self.renderTemplate(`${tmplType}/test`, context);
+
+            self.lintSource(sdkModule);
+            fs.writeFileSync(subdir + `/${version}.js`, sdkModule);
+            fs.writeFileSync(subdir + `/tests/${version}.js`, sdkTests);
+            files.push({
+                dir: subdir,
+                name: `${version}.js`
+            });
+        });
+
+        return buildedPackage;
     },
 
     /**
