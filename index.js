@@ -33,7 +33,7 @@ function registerShellCommands(yargs) {
     yargs.command('build:sdk', 'Generate client SDKs', {
         app: {
             alias: 'a',
-            describe: 'app name restrictions',
+            describe: 'list of app names for which generate SDKs',
             type: 'string',
             default: [],
             array: true,
