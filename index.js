@@ -70,9 +70,10 @@ function registerShellCommands(yargs) {
         if (argv.cleanup) {
             tmp.setGracefulCleanup();
         }
+        let packagePath = config.get('root') + '/package.json';
         const package  = {
             name    : config.getOrFail('npmName'),
-            version : require(config.getOrFail('root')).version,
+            version : config.get('version') || require(packagePath).version,
         };
         const specs    = getSpecs(appManager, argv.app);
         //tmp dir used to build the sdks
