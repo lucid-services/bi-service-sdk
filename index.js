@@ -46,7 +46,6 @@ function registerShellCommands(yargs) {
             type: 'boolean'
         },
         dry: {
-            alias: 'test',
             describe: 'Runs build without actually exporting any files',
             default: false,
             required: true,
