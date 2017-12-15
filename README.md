@@ -2,7 +2,7 @@
 
 ### Generating a SDK client npm package for a `bi-service` based application
 
-Requires `bi-service-doc` & `bi-service-shell` packages to be pluged in along the `bi-service-sdk` plugin.  
+Requires `bi-service-doc` package to be pluged in along the `bi-service-sdk` plugin.  
 Load them at bottom of your `index.js`:  
 
 ```javascript
@@ -14,17 +14,20 @@ module.exports = service;
 //...
 
 //Load the plugins
-require('bi-service-shell');
 require('bi-service-doc');
 require('bi-service-sdk');
 ```
 
 Make sure that your project's `index.js` exports the `Service` instance object.  
-and then just:  
+and then just call the `build:sdk` command:  
 
 ```bash
 > cd ./path/to/my/bi-service-project
-project/root> ./node_modules/.bin/bi-service build:sdk #builds SDKs for all supported apps (zip files are written to cwd)
+#builds SDKs for all supported apps (zip files are written to cwd)
+project/root> ./node_modules/.bin/bi-service build:sdk
+
+#view available cmd options
+project/root> ./node_modules/.bin/bi-service build:sdk --help
 ```
 
 An alternative way is to use standalone `bi-service-sdk` executable and provide it with API specification source from which SDKs are generated:  
