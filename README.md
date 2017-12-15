@@ -32,7 +32,7 @@ An alternative way is to use standalone `bi-service-sdk` executable and provide 
 ```bash
 > cd ./path/to/my/bi-service-project
 # generates SDKs into zip packages in cwd
-> ./node_modules/.bin/bi-service-sdk --specs "http://127.0.0.1:3000/specs"
+> ./node_modules/.bin/bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0 specs*/}}
 
 > # eventually
 > ./node_modules/.bin/bi-service build:sdk --help
