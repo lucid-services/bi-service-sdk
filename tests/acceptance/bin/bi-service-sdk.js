@@ -21,15 +21,15 @@ describe('bin/bi-service-sdk', function() {
 
         tmp.setGracefulCleanup();
         this.tmpDir = tmp.dirSync({
-            unsafeCleanup: true,
-            keep: false
+            //unsafeCleanup: true,
+            keep: true
         });
 
         this.spawn = spawn;
 
 
-        this.sdk1FilePath = `${this.tmpDir.name}/bi-test-app1-1.0.0.zip`;
-        this.sdk2FilePath = `${this.tmpDir.name}/bi-test-app2-1.0.0.zip`;
+        this.sdk1FilePath = `${this.tmpDir.name}/bi-service-app/bi-test-app1-1.0.0.zip`;
+        this.sdk2FilePath = `${this.tmpDir.name}/bi-service-app/bi-test-app2-1.0.0.zip`;
 
         prepareProjectTestCase(this.tmpDir.name + '/bi-service-app', done);
 
@@ -38,7 +38,7 @@ describe('bin/bi-service-sdk', function() {
             args.unshift(cmd);
 
             var result = childProcess.spawnSync('node', args, {
-                cwd: self.tmpDir.name,
+                cwd: self.tmpDir.name + '/bi-service-app',
                 env: { NODE_ENV: 'development' }
             });
 
@@ -94,7 +94,7 @@ describe('bin/bi-service-sdk', function() {
                 '--service',
                 path.resolve(this.tmpDir.name + '/bi-service-app'),
                 '--doc-exec',
-                './bi-service-app/node_modules/.bin/bi-service-doc',
+                './node_modules/.bin/bi-service-doc',
                 '--tests',
                 true,
                 '--',
