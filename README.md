@@ -30,9 +30,8 @@ project/root> ./node_modules/.bin/bi-service build:sdk #builds SDKs for all supp
 An alternative way is to use standalone `bi-service-sdk` executable and provide it with API specification source from which SDKs are generated:  
 
 ```bash
-> cd ./path/to/my/bi-service-project
 # generates SDKs into zip packages in cwd
-> ./node_modules/.bin/bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0 specs*/}}
+> bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0 specs*/}}
 
 > # eventually
 > ./node_modules/.bin/bi-service build:sdk --help
