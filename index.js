@@ -48,7 +48,7 @@ function registerShellCommands(yargs) {
         dry: {
             alias: 'test',
             describe: 'Runs build without actually exporting any files',
-            default: true,
+            default: false,
             required: true,
             type: 'boolean'
         },
@@ -89,9 +89,8 @@ function registerShellCommands(yargs) {
         //for each app - build sdk npm package with API versions bundled in
         //separate files
         Object.keys(specs).forEach(function(appName) {
-            packages.push(
-                bin.build(appName, specs[appName], package, tmpDir)
-            );
+            let pkg = bin.build(appName, specs[appName], package, tmpDir);
+            pkg && packages.push(pkg);
         });
 
         return bin.bundle(packages, tmpDir, argv);

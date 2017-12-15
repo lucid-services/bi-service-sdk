@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 
-var childProcess = require('child_process');
-var fs           = require('fs');
-var path         = require('path');
-var _            = require('lodash');
-var tmp          = require('tmp');
-var yargs        = require('yargs');
-var mustache     = require('mustache');
-var archiver     = require('archiver');
-var jshint       = require('jshint').JSHINT;
-var Promise      = require('bluebird');
+const childProcess = require('child_process');
+const axios        = require('axios');
+const fs           = require('fs');
+const path         = require('path');
+const url          = require('url');
+const _            = require('lodash');
+const tmp          = require('tmp');
+const yargs        = require('yargs');
+const mustache     = require('mustache');
+const archiver     = require('archiver');
+const jshint       = require('jshint').JSHINT;
+const Promise      = require('bluebird');
 
-var SDK_VERSION = require('../package.json').version;
+const SDK_VERSION = require('../package.json').version;
 
-var builder = {
+const builder = {
     /**
      * @param {Object} argv - cli options
      * @return Promise
@@ -22,28 +24,36 @@ var builder = {
         if (argv.cleanup) {
             tmp.setGracefulCleanup();
         }
-        var self     = this;
-        var package  = require(argv.s + '/package.json');
-        var specs    = self.getSwaggerSpecs(argv.s, argv.e, argv._);
-        //tmp dir used to build the sdks
-        var tmpDir   = tmp.dirSync({
-            unsafeCleanup: true,
-            keep: argv.cleanup ? false : true
+        const self     = this;
+        const package  = require(argv.s + '/package.json');
+        let specs;
+
+        if (_.isPlainObject(argv.specs)) {
+            specs = this.fetchSwaggerSpecs(url.format(argv.specs));
+        } else {
+            specs = this.getSwaggerSpecs(argv.s, argv.e, argv._);
+        }
+
+        return specs.bind(this).then(function(specs) {
+            //tmp dir used to build the sdks
+            const tmpDir   = tmp.dirSync({
+                unsafeCleanup: true,
+                keep: argv.cleanup ? false : true
+            });
+            //builded sdk npm pckgs
+            const packages = [];
+
+            console.info(`Build tmp directory: ${tmpDir.name}`);
+
+            //for each app - build sdk npm package with API versions bundled in
+            //separate files
+            Object.keys(specs).forEach(function(appName) {
+                let pkg = this.build(appName, specs[appName], package, tmpDir);
+                pkg && packages.push(pkg);
+            }, this);
+
+            return this.bundle(packages, tmpDir, argv);
         });
-        //builded sdk npm pckgs
-        var packages = [];
-
-        console.info(`Build tmp directory: ${tmpDir.name}`);
-
-        //for each app - build sdk npm package with API versions bundled in
-        //separate files
-        Object.keys(specs).forEach(function(appName) {
-            packages.push(
-                self.build(appName, specs[appName], package, tmpDir)
-            );
-        });
-
-        return self.bundle(packages, tmpDir, argv);
     },
 
     /**
@@ -505,6 +515,16 @@ var builder = {
     },
 
     /**
+     * @param {String} url
+     * @return {Promise<Object>}
+     */
+    fetchSwaggerSpecs: function fetchSwaggerSpecs(url) {
+        return axios.get(url).then(function(res) {
+            return JSON.parse(res.data);
+        });
+    },
+
+    /**
      * @param {String} projectRoot - dirrectory of bi-service based project
      * @param {String} executable - filepath to bi-service-doc executable
      * @param {String} execArgs - shell arguments provided to the bi-service-doc
@@ -512,45 +532,54 @@ var builder = {
      * @throws Error
      * @return {Object}
      */
-    getSwaggerSpecs: function getSwaggerSpecs(projectRoot, executable, execArgs, _attempt) {
-        _attempt = _attempt || 0;
-        args = _.clone(execArgs);
-        args.unshift('get:swagger');
-        args.unshift(executable);
-        args.unshift('--preserve-symlinks');
+    getSwaggerSpecs: function getSwaggerSpecs(projectRoot, executable, execArgs) {
+        return new Promise(function(resolve, reject) {
+            let stderr = '', stdout = '';
+            args = _.clone(execArgs);
+            args.unshift('get:swagger');
+            args.unshift(executable);
+            args.unshift('--preserve-symlinks');
 
-        if (!~args.indexOf('-f') && !~args.indexOf('--file')) {
-            args.push('--file');
-            args.push(projectRoot + (_attempt ? '/index.js' : '/lib/app.js'));
-        }
+            if (!~args.indexOf('-f') && !~args.indexOf('--file')) {
+                args.push('--file');
+                args.push(projectRoot + '/index.js');
+            }
 
-        if (!~args.indexOf('--config')) {
-            args.push('--config');
-            args.push(projectRoot + '/config/development/config.json5');
-        }
+            if (!~args.indexOf('--config')) {
+                args.push('--config');
+                args.push(projectRoot + '/config/development/config.json5');
+            }
 
-        var result = childProcess.spawnSync('node', args);
+            var result = childProcess.spawn('node', args);
 
-        if (result.error) {
-            throw result.error;
-        }
+            result.once('error', reject);
 
-        //invalid --file option is provided
-        if (~[66, 65].indexOf(result.status) && !_attempt) {
-            return this.getSwaggerSpecs.call(this, projectRoot, executable, execArgs, ++_attempt);
-        }
+            result.stdout.setEncoding('utf8');
+            result.stderr.setEncoding('utf8');
+            result.stdout.on('data', function(chunk) {
+                stdout += chunk;
+            });
+            result.stderr.on('data', function(chunk) {
+                stdout += chunk;
+            });
 
-        if (result.status !== 0) {
-            throw new Error(result.stderr.toString());
-        }
+            result.on('exit', function(code) {
+                let specs;
 
-        try {
-            var specs = JSON.parse(result.stdout.toString());
-        } catch(e) {
-            throw new Error('Failed to parse swagger JSON specs: ' + e.message);
-        }
+                if (code !== 0) {
+                    throw new Error(stderr || stdout);
+                }
 
-        return specs;
+                try {
+                    specs = JSON.parse(stdout);
+                } catch(e) {
+                    throw new Error('Failed to parse swagger JSON specs: ' + e.message);
+                }
+
+                resolve(specs);
+            });
+
+        });
     }
 
 };
@@ -576,6 +605,12 @@ if (module.parent === null) {
         default: 'bi-service-doc',
         required: true,
         coerce: path.resolve,
+        type: 'string'
+    })
+    .option('specs', {
+        describe: 'API specification source (Open API 2.0)',
+        required: false,
+        coerce: url.parse,
         type: 'string'
     })
     .option('tests', {

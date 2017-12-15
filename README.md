@@ -1,18 +1,41 @@
 [![Build Status](https://travis-ci.org/BohemiaInteractive/bi-service-sdk.svg?branch=master)](https://travis-ci.org/BohemiaInteractive/bi-service-sdk)  
 
-### Generating a SDK npm package for a `bi-service` based application
+### Generating a SDK client npm package for a `bi-service` based application
 
-* Your project's `index.js` must export the `Service` instance object.  
-* Also you HAVE TO manually install `development` dependencies for the package.
+Requires `bi-service-doc` & `bi-service-shell` packages to be pluged in along the `bi-service-sdk` plugin.  
+Load them at bottom of your `index.js`:  
+
+```javascript
+//index.js
+//...
+const Service = require('bi-service');
+const service = new Service(/*...*/);
+module.exports = service;
+//...
+
+//Load the plugins
+require('bi-service-shell');
+require('bi-service-doc');
+require('bi-service-sdk');
+```
+
+Make sure that your project's `index.js` exports the `Service` instance object.  
+and then just:  
 
 ```bash
 > cd ./path/to/my/bi-service-project
-> npm i bi-service-sdk
-> npm i bi-service-doc
+project/root> ./node_modules/.bin/bi-service build:sdk #builds SDKs for all supported apps (zip files are written to cwd)
+```
+
+An alternative way is to use standalone `bi-service-sdk` executable and provide it with API specification source from which SDKs are generated:  
+
+```bash
+> cd ./path/to/my/bi-service-project
 # generates SDKs into zip packages in cwd
-> ./node_modules/.bin/bi-service-sdk -e "./node_modules/.bin/bi-service-doc" -- -f index.js
+> ./node_modules/.bin/bi-service-sdk --specs "http://127.0.0.1:3000/specs"
 
 > # eventually
+> ./node_modules/.bin/bi-service build:sdk --help
 > ./node_modules/.bin/bi-service-sdk --help
 > ./node_modules/.bin/bi-service-doc --help
 ```
