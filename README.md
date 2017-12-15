@@ -2,7 +2,7 @@
 
 ### Generating a SDK client npm package for a `bi-service` based application
 
-Requires `bi-service-doc` package to be pluged in along the `bi-service-sdk` plugin.  
+Requires `bi-service-doc` package to be plugged in along the `bi-service-sdk` plugin.  
 Load them at bottom of your `index.js`:  
 
 ```javascript
