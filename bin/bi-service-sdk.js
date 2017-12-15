@@ -28,7 +28,7 @@ const builder = {
         const package  = require(argv.s + '/package.json');
         let specs;
 
-        if (_.isPlainObject(argv.specs)) {
+        if ((argv.specs instanceof url.Url)) {
             specs = this.fetchSwaggerSpecs(url.format(argv.specs));
         } else {
             specs = this.getSwaggerSpecs(argv.s, argv.e, argv._);
@@ -519,8 +519,16 @@ const builder = {
      * @return {Promise<Object>}
      */
     fetchSwaggerSpecs: function fetchSwaggerSpecs(url) {
+        global.Promise = Promise;
         return axios.get(url).then(function(res) {
-            return JSON.parse(res.data);
+            let data = res.data[Object.keys(res.data).shift()];
+            let out = {};
+            if (_.has(data, ['info', 'title'])) {
+                out[data.info.title] = res.data;
+            } else {
+                throw new Error('Could not get API specification `info.title` option');
+            }
+            return out;
         });
     },
 
