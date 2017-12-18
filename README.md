@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.org/BohemiaInteractive/bi-service-sdk.svg?branch=master)](https://travis-ci.org/BohemiaInteractive/bi-service-sdk)  
 
+### Peer Dependencies
+
+* `bi-service` >= `1.0.0-rc`
+* `bi-service-doc` >= `1.0.0-beta.5`
+
 ### Generating a SDK client npm package for a `bi-service` based application
 
 Requires `bi-service-doc` package to be plugged in along the `bi-service-sdk` plugin.  
