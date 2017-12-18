@@ -1,206 +1,133 @@
-var axios       = require('axios');
-var toCamelCase = require('lodash.camelcase');
+const BIServiceSDK    = require('./lib/http.js');
+const SDKRequestError = require('./lib/errors/SDKRequestError.js');
+const SDKInterface    = require('./lib/interface.js');
+const _               = require('lodash');
+const tmp             = require('tmp');
 
-var SDKRequestError = require('./lib/errors/SDKRequestError.js');
-var SDKInterface    = require('./lib/interface.js');
+let Service, ServiceDoc, bin;
 
 module.exports                       = BIServiceSDK;
 module.exports.BIServiceSDK          = BIServiceSDK;
 module.exports.BIServiceSDKInterface = SDKInterface;
 module.exports.SDKRequestError       = SDKRequestError;
 
-/**
- * @constructor
- *
- * @param {Object} [options] - supports all axios options
- * @param {Object} [options.query] - alias for axios `params` option
- * @param {Object} [options.errors] - a hash object mapping http status code to custom Error constructor
- */
-function BIServiceSDK(options) {
-    options = Object.assign({}, options || {});
-    options.errors = options.errors || {};
+try {
+    Service    = require('bi-service');
+    ServiceDoc = require('bi-service-doc');
+    bin        = require('./bin/bi-service-sdk.js');
 
-    this.options = options;
 
-    if (!options.baseURL || typeof options.baseURL !== 'string') {
-        throw new Error('`baseURL` string option is required');
+    Service.once('set-up', function(appManager) {
+        appManager.service.on('shell-cmd', registerShellCommands);
+    });
+} catch(e) {
+    if (e.code !== 'MODULE_NOT_FOUND') {
+        throw e;
     }
+}
 
-    if (typeof options.errors !== 'object' || options.errors === null) {
-        throw new Error('`errors` option must be a hash object');
-    }
+function registerShellCommands(yargs) {
+    const appManager = this.appManager;
+    const config     = this.config;
 
-    if (typeof options.query === 'object' && options.query !== null) {
-        options.params = Object.assign(options.params || {}, options.query);
-        delete options.query;
-    }
+    yargs.command('build:sdk', 'Generate client SDKs', {
+        app: {
+            alias: 'a',
+            describe: 'list of app names for which generate SDKs',
+            type: 'string',
+            default: [],
+            array: true,
+        },
+        tests: {
+            alias: 'test',
+            describe: 'Runs automated tests on builded SDKs',
+            default: true,
+            required: true,
+            type: 'boolean'
+        },
+        dry: {
+            describe: 'Runs build without actually exporting any files',
+            default: false,
+            required: true,
+            type: 'boolean'
+        },
+        cleanup: {
+            describe: 'Whether to cleanup tmp files created during the build',
+            default: true,
+            required: true,
+            type: 'boolean'
+        },
+        verbose: {
+            alias: 'v',
+            describe: 'Dumps more info to stdout (eg. about tests | npm install)',
+            default: 1,
+            count: true,
+            type: 'boolean'
+        },
+    }, buildCmd);
 
-    this.axios = axios.create(this.options);
-
-    var _adapter = this.axios.defaults.adapter;
-    this.axios.defaults.adapter = responseFilterMiddleware;
-
-    function responseFilterMiddleware(config) {
-        return _adapter(config).then(function(response) {
-            delete response.statusText;
-            delete response.config;
-            delete response.request;
-            return response;
+    function buildCmd(argv) {
+        if (argv.cleanup) {
+            tmp.setGracefulCleanup();
+        }
+        let packagePath = config.get('root') + '/package.json';
+        const package  = {
+            name    : config.getOrFail('npmName'),
+            version : config.get('version') || require(packagePath).version,
+        };
+        const specs    = getSpecs(appManager, argv.app);
+        //tmp dir used to build the sdks
+        const tmpDir   = tmp.dirSync({
+            unsafeCleanup: true,
+            keep: argv.cleanup ? false : true
         });
+        //builded sdk npm pckgs
+        const packages = [];
+
+        console.info(`Build tmp directory: ${tmpDir.name}`);
+
+        //for each app - build sdk npm package with API versions bundled in
+        //separate files
+        Object.keys(specs).forEach(function(appName) {
+            let pkg = bin.build(appName, specs[appName], package, tmpDir);
+            pkg && packages.push(pkg);
+        });
+
+        return bin.bundle(packages, tmpDir, argv);
+    }
+}
+
+/**
+ * @return {AppManager} appManager
+ * @return {Array<String>} apps
+ * @return {Object}
+ */
+function getSpecs(appManager, apps) {
+    apps = apps || [];
+
+    if (!apps.length) {
+        //no specific apps were listed by an user so generate specs
+        //for all available apps
+        apps = _.map(appManager.apps, 'options.name');
     }
 
-    //transform error response properties to camelCase
-    this.axios.interceptors.response.use(null, function(err) {
-        if (   err.response
-            && typeof err.response.data === 'object'
-            && err.response.data !== null
-        ) {
-            var out = {};
-            Object.keys(err.response.data).forEach(function(prop) {
-                out[toCamelCase(prop)] = err.response.data[prop];
-            });
-            err.response.data = out;
-        }
+    const specs = {};
 
-        return Promise.reject(err);
+    appFilter(appManager.apps, apps).reduce(function(specs, app) {
+        specs[app.options.name] = ServiceDoc.swagger.generate(app);
+        return specs;
+    }, specs);
+
+    return specs;
+}
+
+/**
+ * @param {Array<AppInterface>} apps
+ * @param {Array<String>} whitelist
+ * @return {Array<AppInterface>}
+ */
+function appFilter(apps, whitelist) {
+    return apps.filter(function(app) {
+        return app && whitelist.indexOf(app.options.name) !== -1;
     });
-};
-
-BIServiceSDK.prototype = Object.create(SDKInterface.prototype);
-BIServiceSDK.prototype.constructor = BIServiceSDK;
-
-
-/**
- *
- * @param {Function} plugin - takes Axios instance object as the single argument
- *
- * @return {mixed}
- */
-BIServiceSDK.prototype.use = function(plugin) {
-    return plugin.call(this, this.axios);
-};
-
-
-/**
- * adapter which maps (user API) target: data|headers|query to internal axios data|headers|params data options
- *
- * @param {String} [key]
- * @param {mixed}  value - data to be set
- * @param {Object} config - axios config object
- * @param {String} [target='data'] - possible values data|headers|query
- *
- * @return {undefined}
- */
-BIServiceSDK.prototype._setReqData = function(key, value, config, target) {
-    target = target || 'data';
-
-    if (!this._hasBodyPayload(config.method)) { //without BODY payload
-        if (~['data', 'query'].indexOf(target)) {
-            setValue(key, value, 'params');
-        } else if (target === 'headers') {
-            setValue(key, value, 'headers');
-        }
-    } else { // with BODY payload
-        if (target === 'data') {
-            setValue(key, value, 'data');
-        } else if (target === 'headers') {
-            setValue(key, value, 'headers');
-        } else if (target === 'query') {
-            setValue(key, value, 'params');
-        }
-    }
-
-    function setValue(k, v, destination) {
-        if (k) {
-            if (   typeof config[destination] !== 'object'
-                || config[destination] === null
-            ) {
-                config[destination] = {};
-            }
-            config[destination][k] = v;
-        } else if (typeof v === 'object'
-            && typeof config[destination] === 'object'
-            && v !== null
-            && config[destination] !== null
-        ) {
-            Object.assign(config[destination], v);
-        } else {
-            config[destination] = v;
-        }
-    }
-};
-
-
-/**
- *
- * @param {String} httpMethod
- *
- * @return {Boolean}
- */
-BIServiceSDK.prototype._hasBodyPayload = function(httpMethod) {
-    httpMethod = typeof httpMethod === 'string'
-        ? httpMethod.toLowerCase() : httpMethod;
-
-    if (~['post', 'put', 'delete'].indexOf(httpMethod)) {
-        return true;
-    }
-
-    return false;
-};
-
-
-/**
- * @method
- * @private
- *
- * @param {Object} options
- * @param {String} options.method
- * @param {String} options.url
- * @param {Object} options.params - query parameters
- * @param {Object} options.data - query / body parameters depending on request method
- * @param {Object} options.headers
- *
- * @return {Promise}
- */
-BIServiceSDK.prototype.$request = function(options) {
-    var self = this;
-
-    //for POST|PUT|DELETE req methods - options.data is expected to contain
-    //body paramters whereas for any other req methods, options.data is expected
-    //to contain query parameters
-    if (typeof options === 'object'
-        && options !== null
-        && typeof options.data === 'object'
-        && options.data !== null
-    ) {
-        this._setReqData(null, options.data, options, 'data')
-        if (!this._hasBodyPayload(options.method)) {
-            delete options.data;
-        }
-    }
-
-    return this.axios.request(options).catch(function(err) {
-        if (typeof err.response === 'object' && err.response !== null) {
-
-            var status = err.response.status;
-            var baseStatus = parseInt((status + '')[0] + '00');
-            var e = null; //transformed err
-
-            if (typeof self.options.errors[status] === 'function') {
-                e = new self.options.errors[status](err.response.data);
-            } else if (typeof self.options.errors[baseStatus] === 'function') {
-                e = new self.options.errors[baseStatus](err.response.data);
-            //there wasn't any custom Error constructor to transtate the err to
-            } else {
-                e = new SDKRequestError(err.response.data);
-            }
-
-            e.code = err.response.status;
-            delete err.response;
-            return Promise.reject(e);
-        }
-
-        //response never received or failed while setting up the request
-        return Promise.reject(err);
-    });
-};
+}

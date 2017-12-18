@@ -1,21 +1,50 @@
 [![Build Status](https://travis-ci.org/BohemiaInteractive/bi-service-sdk.svg?branch=master)](https://travis-ci.org/BohemiaInteractive/bi-service-sdk)  
 
-### Generating a SDK npm package for a `bi-service` based application
+### Peer Dependencies
 
-* Your project's `index.js` must export the `Service` instance object.  
-* Also if `bi-service-sdk` package is installed globally, you have to manually install `development` dependencies for the package.
+* `bi-service` >= `1.0.0-rc`
+* `bi-service-doc` >= `1.0.0-beta.5`
+
+### Generating a SDK client npm package for a `bi-service` based application
+
+Requires `bi-service-doc` package to be plugged in along the `bi-service-sdk` plugin.  
+Load them at bottom of your `index.js`:  
+
+```javascript
+//index.js
+//...
+const Service = require('bi-service');
+const service = new Service(/*...*/);
+module.exports = service;
+//...
+
+//Load the plugins
+require('bi-service-doc');
+require('bi-service-sdk');
+```
+
+Make sure that your project's `index.js` exports the `Service` instance object.  
+and then just call the `build:sdk` command:  
 
 ```bash
-> npm i -g bi-service-sdk
-> npm i -g bi-service-doc
-
 > cd ./path/to/my/bi-service-project
+#builds SDKs for all supported apps (zip files are written to cwd)
+project/root> ./node_modules/.bin/bi-service build:sdk
+
+#view available cmd options
+project/root> ./node_modules/.bin/bi-service build:sdk --help
+```
+
+An alternative way is to use standalone `bi-service-sdk` executable and provide it with API specification source from which SDKs are generated:  
+
+```bash
 # generates SDKs into zip packages in cwd
-> bi-service-sdk -e "$(which bi-service-doc)" -- -f index.js
+> bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0 specs*/}}
 
 > # eventually
-> bi-service-sdk --help
-> bi-service-doc --help
+> ./node_modules/.bin/bi-service build:sdk --help
+> ./node_modules/.bin/bi-service-sdk --help
+> ./node_modules/.bin/bi-service-doc --help
 ```
 
 
