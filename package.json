@@ -23,7 +23,6 @@
     "files": [
         "bin",
         "lib",
-        "tests",
         "index.js"
     ],
     "license": "GPL-3.0",
