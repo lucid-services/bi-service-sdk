@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.2.0
 
 * [ADDED] - `--specs` option to `bi-service-sdk` executable
 * [ADDED] - make use of bi-service shell API - `build:sdk` command is available via `bi-service` executable
