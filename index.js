@@ -24,6 +24,7 @@ try {
     if (e.code !== 'MODULE_NOT_FOUND') {
         throw e;
     }
+    console.log(`WARNING: ${e.message}`);
 }
 
 function registerShellCommands(yargs) {
