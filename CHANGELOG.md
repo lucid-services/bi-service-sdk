@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.2.1
+
+* [FIXED] - AMQP SDKs were being assigned incorrect endpoint method types
+* [FIXED] - make `jshint` a regular dependency instead of `devDependency`
+* [FIXED] - print warning when an error occurs during sdk plugin registration
+
 ## 1.2.0
 
 * [ADDED] - `--specs` option to `bi-service-sdk` executable

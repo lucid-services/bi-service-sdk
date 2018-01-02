@@ -2,6 +2,14 @@
 
 var SDKInterface = module.require('bi-service-sdk').BIServiceSDKInterface;
 
+var METHODS = {
+    subscribe : 'publish',
+    sub       : 'publish',
+    pull      : 'push',
+    reply     : 'request',
+    worker    : 'push'
+};
+
 module.exports = {{{moduleName}}};
 
 
@@ -27,7 +35,7 @@ function {{{moduleName}}}(options) {
 
     {{#paths}}
     // @operationId {{{operationId}}}
-    context = this.create("{{{method}}}", {
+    context = this.create(METHODS["{{{method}}}".toLowerCase()], {
         persistent: JSON.parse("{{{amqp.persistent}}}" || false),
         noCreate: JSON.parse("{{{amqp.noCreate}}}" || false),
         expiration: JSON.parse("{{{amqp.expiration}}}" || false),
