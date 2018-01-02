@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## FUTURE
 
+* [FIXED] - AMQP SDKs were being assigned incorrect endpoint method types
 * [FIXED] - make `jshint` a regular dependency instead of `devDependency`
-* [ADDED] - print warning when an error occurs during sdk plugin registration
+* [FIXED] - print warning when an error occurs during sdk plugin registration
 
 ## 1.2.0
 
