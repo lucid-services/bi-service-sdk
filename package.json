@@ -40,8 +40,8 @@
     },
     "devDependencies": {
         "bi-service-doc": "^1.0.0-beta",
-        "bi-service": "^1.0.0-rc",
-        "bi-config": "^2.0.0-alpha",
+        "bi-service": "^1.0.0",
+        "bi-config": "^2.0.0",
         "chai": "^4.1.2",
         "chai-as-promised": "^7.1.1",
         "istanbul": "^0.4.3",
