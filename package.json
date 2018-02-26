@@ -1,6 +1,6 @@
 {
     "name": "bi-service-sdk",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "Exposes common sdk interface & provides client sdk generator for bi-service based apps",
     "main": "index.js",
     "bin": "./bin/bi-service-sdk.js",
@@ -39,9 +39,9 @@
         "archiver": "^1.3.0"
     },
     "devDependencies": {
-        "bi-service-doc": "^1.0.0-beta",
-        "bi-service": "^1.0.0-rc",
-        "bi-config": "^2.0.0-alpha",
+        "bi-service-doc": "^1.0.0",
+        "bi-service": "^1.0.0",
+        "bi-config": "^2.0.0",
         "chai": "^4.1.2",
         "chai-as-promised": "^7.1.1",
         "istanbul": "^0.4.3",
