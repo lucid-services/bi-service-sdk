@@ -346,7 +346,7 @@ const builder = {
     getTemplateContext: function getTemplateContext(spec, package) {
         var self = this;
         var out = {
-            moduleName : this.getConstructorName(package.name, spec.info.version),
+            moduleName : this.getConstructorName(package.name, spec.info),
             openbrace  : '{',
             closebrace : '}',
             version    : spec.info.version,
@@ -354,6 +354,8 @@ const builder = {
             basePath   : spec.basePath,
             paths      : []
         };
+        console.log('=================');
+        console.log(out);
 
         if (spec.schemes instanceof Array
             && (~spec.schemes.indexOf('http') || ~spec.schemes.indexOf('https'))
@@ -449,17 +451,26 @@ const builder = {
     /**
      *
      * @param {String} serviceName
-     * @param {String} version
+     * @param {Object} specsInfo
+     * @param {String} specsInfo.version
+     * @param {String} specsInfo.title
+     * @param {String} specsInfo.x-app
      *
      * @return {String}
      */
-    getConstructorName: function getConstructorName(serviceName, version) {
+    getConstructorName: function getConstructorName(serviceName, specsInfo) {
+        specsInfo = specsInfo || {};
+        let version = specsInfo.version;
+        let app = specsInfo['x-app'] || specsInfo.title;
+        app = app.replace(/[^a-zA-Z0-9_]/gi, '');
         serviceName = serviceName.replace(/^bi-/, '');
         serviceName = serviceName.toLowerCase();
         serviceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
         version = version.replace(/\./, '_');
 
-        return `${serviceName}SDK_${version}`.replace(/\W+/g, '_');
+        return `${serviceName}_${app}_SDK_${version}`
+            .replace(/\W+/g, '_')
+            .replace(/[^a-zA-Z0-9_]/gi, '');
     },
 
     /**

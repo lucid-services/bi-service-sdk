@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] - a SDK constructor name should incorporate an application name the sdk is built for (fixes #3)
+
 ## 1.2.1
 
 * [FIXED] - AMQP SDKs were being assigned incorrect endpoint method types
