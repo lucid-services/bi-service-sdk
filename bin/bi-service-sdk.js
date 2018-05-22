@@ -354,8 +354,6 @@ const builder = {
             basePath   : spec.basePath,
             paths      : []
         };
-        console.log('=================');
-        console.log(out);
 
         if (spec.schemes instanceof Array
             && (~spec.schemes.indexOf('http') || ~spec.schemes.indexOf('https'))
