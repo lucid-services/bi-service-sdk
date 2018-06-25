@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.2.3
 
 * [FIXED] - reserved words should not be used as variable names
 * [FIXED] - do not demand url path parameter values to be of string type
