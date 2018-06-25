@@ -73,10 +73,7 @@ function {{{moduleName}}}(options) {
     }
 
     if (typeof {{name}} === 'undefined') {
-        {{name}} = options && options.path && options.path.{{name}};
-    }
-    if (typeof {{name}} !== 'string') {
-        return Promise.reject(new Error('"{{name}}" path segment parameter must be a string.'));
+        {{name}} = options && options.path && options.path['{{name}}'];
     }
     {{/pathParams}}
 
