@@ -72,7 +72,7 @@ function registerShellCommands(yargs) {
             tmp.setGracefulCleanup();
         }
         let packagePath = config.get('root') + '/package.json';
-        const package  = {
+        const npmPackage  = {
             name    : config.getOrFail('npmName'),
             version : config.get('version') || require(packagePath).version,
         };
@@ -90,7 +90,7 @@ function registerShellCommands(yargs) {
         //for each app - build sdk npm package with API versions bundled in
         //separate files
         Object.keys(specs).forEach(function(appName) {
-            let pkg = bin.build(appName, specs[appName], package, tmpDir);
+            let pkg = bin.build(appName, specs[appName], npmPackage, tmpDir);
             pkg && packages.push(pkg);
         });
 

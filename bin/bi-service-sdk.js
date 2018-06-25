@@ -25,7 +25,7 @@ const builder = {
             tmp.setGracefulCleanup();
         }
         const self     = this;
-        const package  = require(argv.s + '/package.json');
+        const npmPackage  = require(argv.s + '/package.json');
         let specs;
 
         if ((argv.specs instanceof url.Url)) {
@@ -48,7 +48,7 @@ const builder = {
             //for each app - build sdk npm package with API versions bundled in
             //separate files
             Object.keys(specs).forEach(function(appName) {
-                let pkg = this.build(appName, specs[appName], package, tmpDir);
+                let pkg = this.build(appName, specs[appName], npmPackage, tmpDir);
                 pkg && packages.push(pkg);
             }, this);
 
@@ -66,21 +66,21 @@ const builder = {
         const self = this;
         // verify integrity of SDKs (tests) and bundle each created npm package
         // in separate zip file -> export to cwd
-        return Promise.each(packages, function(package) {
+        return Promise.each(packages, function(pkg) {
             if (!argv.tests) {
                 return;
             }
 
-            return self.runNpmInstall(package.dir, argv.v).then(function() {
-                return self.runPackageTests(package.dir, argv.v);
+            return self.runNpmInstall(pkg.dir, argv.v).then(function() {
+                return self.runPackageTests(pkg.dir, argv.v);
             });
-        }).map(function(package) {
+        }).map(function(pkg) {
 
             if (argv.dry) {
                 return;
             }
 
-            var zipFilePath = process.cwd() + '/' + package.filename;
+            var zipFilePath = process.cwd() + '/' + pkg.filename;
             var output = fs.createWriteStream(zipFilePath, {
                 flags: 'wx' //dont overwrite
             });
@@ -88,7 +88,7 @@ const builder = {
             if (argv.v >= 1) {
                 console.info(`Exporting ${zipFilePath}`);
             }
-            return self.zipFiles(package.files, output);
+            return self.zipFiles(pkg.files, output);
         }).then(function() {
             if (argv.cleanup) {
                 tmpDir.removeCallback();
@@ -121,18 +121,18 @@ const builder = {
     /**
      * @param {String} appName
      * @param {Object} specs
-     * @param {Object} package
+     * @param {Object} pkg
      * @param {Object} tmpDir
-     * @return {Object} package bundle
+     * @return {Object} pkg bundle
      */
-    build: function build(appName, specs, package, tmpDir) {
+    build: function build(appName, specs, pkg, tmpDir) {
         const self = this;
         var files = [];
         var tmplType = self.getTemplateType(specs);
-        var subdir = `${tmpDir.name}/${package.name}-${appName}-${package.version}`;
+        var subdir = `${tmpDir.name}/${pkg.name}-${appName}-${pkg.version}`;
         var buildedPackage = {
             dir: subdir,
-            filename: `${package.name}-${appName}-${package.version}.zip`,
+            filename: `${pkg.name}-${appName}-${pkg.version}.zip`,
             files: files,
         };
 
@@ -150,8 +150,8 @@ const builder = {
         var sdkPackage = self.renderTemplate(`${tmplType}/package`,
             _.merge(
                 {appName: appName},
-                package,
-                {version: self.getSDKPackageVersion(SDK_VERSION, package.version)}
+                pkg,
+                {version: self.getSDKPackageVersion(SDK_VERSION, pkg.version)}
             ));
 
         self.lintSource(sdkIndex);
@@ -172,7 +172,7 @@ const builder = {
         Object.keys(specs).forEach(function(version) {
 
             var spec = specs[version];
-            var context = self.getTemplateContext(spec, package);
+            var context = self.getTemplateContext(spec, pkg);
             context.context = JSON.stringify(context);
 
             var sdkModule = self.renderTemplate(`${tmplType}/module`, context);
@@ -321,6 +321,7 @@ const builder = {
 
         var JSHINT_OPTIONS = {
             node      : 'node',
+            sub       : true,
             undef     : true,
             strict    : true,
             trailing  : true,
@@ -339,14 +340,14 @@ const builder = {
      * @public
      *
      * @param {Object} spec - swagger 2.0 definition
-     * @param {Object} package - service's package.json
+     * @param {Object} pkg - service's package.json
      *
      * @return {Object}
      */
-    getTemplateContext: function getTemplateContext(spec, package) {
+    getTemplateContext: function getTemplateContext(spec, pkg) {
         var self = this;
         var out = {
-            moduleName : this.getConstructorName(package.name, spec.info),
+            moduleName : this.getConstructorName(pkg.name, spec.info),
             openbrace  : '{',
             closebrace : '}',
             version    : spec.info.version,
