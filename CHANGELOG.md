@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 1.2.3
 
-* [FIXED] - reserved words should not be used as variable names
+* [FIXED] - reserved javascript keywords should not be used as variable names
 * [FIXED] - do not demand url path parameter values to be of string type
 
 ## 1.2.2
