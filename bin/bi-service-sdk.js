@@ -217,6 +217,17 @@ const builder = {
     },
 
     /**
+     * @param {Integer} version
+     */
+    _isAtNodeVersionOrHigher: function(version) {
+        let match = process.version.match(/v(\d+)\..*$/);
+        if (match && parseInt(match[1]) >= version) {
+            return true;
+        }
+        return false;
+    },
+
+    /**
      * @param {String} projectRoot
      * @param {Integer} vLevel - verbosity level
      *
@@ -237,6 +248,10 @@ const builder = {
         ];
 
         var npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
+        if (this._isAtNodeVersionOrHigher(8)) {
+            npmArgs.push('--no-save');
+        }
 
         if (vLevel >= 1) {
             console.info(`${projectRoot} - preparing testing environment`);

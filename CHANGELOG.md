@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] - `npm install` should be executed with `--no-save` option when installing dependencies for tests
+
 ## 1.2.3
 
 * [FIXED] - reserved javascript keywords should not be used as variable names
