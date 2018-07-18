@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.2.4
 
 * [FIXED] - `npm install` should be executed with `--no-save` option when installing dependencies for tests
 
