@@ -46,10 +46,7 @@ function {{{moduleName}}}(options) {
  * @param {{openbrace}}{{type}}{{closebrace}} [{{name}}]{{#description}} - {{{description}}}{{/description}}
 {{/pathParams}}
  * @param {Object} options
- * @param {Object} options.data
- {{#dataParams}}
- * @param {{openbrace}}{{type}}{{closebrace}} options.data.{{name}}{{#description}} - {{{description}}}{{/description}}
- {{/dataParams}}
+ * @param {Object} options.data - request body payload in case of PUT|POST|DELETE, query parameters otherwise
  * @param {Object} [options.query]
  {{#queryParams}}
  * @param {{openbrace}}{{type}}{{closebrace}} [options.params.{{name}}]{{#description}} - {{{description}}}{{/description}}

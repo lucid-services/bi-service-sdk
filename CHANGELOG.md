@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.3.0
+
+* [ADDED] - support for `bi-service-doc@2.x` which uses `OpenAPI v3`
+
 ## 1.2.4
 
 * [FIXED] - `npm install` should be executed with `--no-save` option when installing dependencies for tests

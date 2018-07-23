@@ -2,8 +2,8 @@
 
 ### Peer Dependencies
 
-* `bi-service` >= `1.0.0-rc`
-* `bi-service-doc` >= `1.0.0-beta.5`
+* `bi-service` >= `1.0.0`
+* `bi-service-doc` >= `2.0.0`
 
 ### Generating a SDK client npm package for a `bi-service` based application
 
