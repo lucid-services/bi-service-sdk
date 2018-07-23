@@ -105,15 +105,48 @@ const builder = {
      */
     getTemplateType: function getTemplateType(specs) {
         let _spec = _.values(specs).shift();
-        if (_spec && _spec.schemes instanceof Array) {
-            if (   ~_spec.schemes.indexOf('amqp')
-                || ~_spec.schemes.indexOf('amqps')
-            ) {
+
+        if (!_spec) {
+            return;
+        }
+
+        if (typeof _spec.openapi === 'string'
+            && _spec.openapi.indexOf('3') == 0
+        ) {
+            let server = {
+                variables: {
+                    protocol: {default: ''}
+                }
+            };
+
+
+            if (_spec.servers instanceof Array && _spec.servers.length > 0) {
+                Object.assign(
+                    server.variables.protocol,
+                    _.get(_spec.servers[0], ['variables', 'protocol'], {})
+                );
+            }
+
+            let protocol = server.variables.protocol.default;
+
+            if (['amqp://', 'amqps://'].includes(protocol)) {
                 return 'amqp';
-            } else if (   ~_spec.schemes.indexOf('http')
-                || ~_spec.schemes.indexOf('https')
-            ) {
+            } else if (['http://', 'https://'].includes(protocol)) {
                 return 'http';
+            }
+        } else if(typeof _spec.swagger === 'string'
+            && _spec.swagger.indexOf('2') == 0
+        ) {
+            if (_spec.schemes instanceof Array) {
+                if (   ~_spec.schemes.indexOf('amqp')
+                    || ~_spec.schemes.indexOf('amqps')
+                ) {
+                    return 'amqp';
+                } else if (   ~_spec.schemes.indexOf('http')
+                    || ~_spec.schemes.indexOf('https')
+                ) {
+                    return 'http';
+                }
             }
         }
     },
@@ -138,6 +171,7 @@ const builder = {
 
         //unsupported API specification
         if (!tmplType) {
+            console.info(`app ${appName} - unknown or unsupported protocol, skiping..`);
             return;
         }
 
@@ -354,29 +388,24 @@ const builder = {
     /**
      * @public
      *
-     * @param {Object} spec - swagger 2.0 definition
+     * @param {Object} spec - swagger 2.0|3.0 definition
      * @param {Object} pkg - service's package.json
      *
      * @return {Object}
      */
     getTemplateContext: function getTemplateContext(spec, pkg) {
         var self = this;
+        var server = this.getDestinationServer(spec);
+
         var out = {
             moduleName : this.getConstructorName(pkg.name, spec.info),
             openbrace  : '{',
             closebrace : '}',
             version    : spec.info.version,
-            host       : spec.host,
-            basePath   : spec.basePath,
+            host       : server.host,
+            basePath   : server.basePath,
             paths      : []
         };
-
-        if (spec.schemes instanceof Array
-            && (~spec.schemes.indexOf('http') || ~spec.schemes.indexOf('https'))
-            && !out.host.match(/^\w+:\/\//)
-        ) {
-            out.host = out.host && (spec.schemes.indexOf('https') !== -1 ? 'https://' : 'http://') + out.host;
-        }
 
         var _sdkMethodNames = [];
 
@@ -385,18 +414,11 @@ const builder = {
                 var route = spec.paths[path][method];
 
                 var queryParams = self.filterParams(route.parameters, 'query');
-                var bodyParams = self.filterParams(route.parameters, 'body|formData');
-
-                //convert body payload to formData-like format and strip parameters
-                //to one level deep definitions
-                if (bodyParams.length == 1 && bodyParams[0].in === 'body') {
-                    bodyParams = self.body2Params(bodyParams[0]);
-                }
-
+                var hasBody = ['post', 'put', 'delete'].includes(method.toLowerCase());
 
                 var def = {
-                    sdkMethodName : route['x-sdkMethodName'] || route.sdkMethodName,
-                    hasBody       : ~['post', 'put', 'delete'].indexOf(method.toLowerCase()),
+                    sdkMethodName : route['x-sdkMethodName'],
+                    hasBody       : hasBody,
                     operationId   : route.operationId,
                     tags          : route.tags,
                     routeDesc     : (route.description || '').replace(/\ {2,}/g, ' '),
@@ -405,18 +427,13 @@ const builder = {
                     url           : path,
                     pathParams    : self.filterParams(route.parameters, 'path'),
                     headerParams  : self.filterParams(route.parameters, 'header'),
+                    queryParams   : hasBody ? queryParams : [],
                     methodPathArgs: function() {
                         return this.pathParams.map(function(param) {
                             return param.name;
                         }).join(', ') + (this.pathParams.length ? ', ': '');
                     }
                 };
-
-                //for thore requests which have BODY payload, "data" option
-                //referes to the body parameters whereas for eg.: GET / PATCH requests
-                //"data" is expected to contain query parameters
-                def.dataParams = def.hasBody ? bodyParams : queryParams;
-                def.queryParams = def.hasBody ? queryParams : [];
 
                 self.sanitizePathParams(def.pathParams);
 
@@ -428,12 +445,61 @@ const builder = {
                     def.amqp = route['x-amqp'];
                 }
 
-                _sdkMethodNames.push(route.sdkMethodName);
+                _sdkMethodNames.push(def.sdkMethodName);
                 out.paths.push(def);
             });
         });
 
         return out;
+    },
+
+    /**
+     * returns {host, '', basePath: ''}
+     * @param {Object} spec - OpenAPI v2 | v3
+     * @return {Object}
+     */
+    getDestinationServer: function(spec) {
+        let server = {
+            host: '',
+            basePath: ''
+        };
+
+        if (typeof spec.openapi === 'string'
+            && spec.openapi.indexOf('3') == 0
+        ) {
+            let protocolPath = ['variables', 'protocol', 'default'];
+            let hostPath = ['variables', 'host', 'default'];
+            let basePathPath = ['variables', 'basePath', 'default'];
+
+            let protocol = _.get(spec.servers[0], protocolPath, '');
+            let host = _.get(spec.servers[0], hostPath, '');
+            let basePath = _.get(spec.servers[0], basePathPath, '');
+
+            server.host = protocol + host;
+            server.basePath = basePath;
+
+        } else if(typeof spec.swagger === 'string'
+            && spec.swagger.indexOf('2') == 0
+        ) {
+            server.host = spec.host;
+            server.basePath = spec.basePath;
+
+            if (spec.schemes instanceof Array
+                && (~spec.schemes.indexOf('http')
+                    || ~spec.schemes.indexOf('https')
+                ) && !server.host.match(/^\w+:\/\//)
+            ) {
+                if (server.host) {
+                    server.host = (
+                        spec.schemes.indexOf('https') !== -1 ?
+                        'https://' :
+                        'http://'
+                    ) + server.host;
+                }
+            }
+        }
+
+        return server;
     },
 
     /**
@@ -511,32 +577,6 @@ const builder = {
         return params.filter(function(param) {
             return param.in.match(filter);
         });
-    },
-
-    /**
-     * @param {Object} body
-     * @param {Array} out - internal property
-     *
-     * @return {Array}
-     */
-    body2Params: function body2Params(body, out) {
-        out = out || [];
-
-        Object.keys(body.schema.properties).forEach(function(name) {
-            var required = body.schema.required;
-            var param = body.schema.properties[name];
-
-            out.push({
-                name: name,
-                required: Array.isArray(required) && required.indexOf(name) !== -1,
-                in: 'formData',
-                type: param.type,
-                format: param.format,
-                description: param.description
-            });
-        });
-
-        return out;
     },
 
     /**
