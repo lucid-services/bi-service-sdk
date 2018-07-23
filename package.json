@@ -17,8 +17,8 @@
         "sdk",
         "API"
     ],
-    "engines" : {
-       "node" : ">=6.4.0"
+    "engines": {
+        "node": ">=6.4.0"
     },
     "files": [
         "bin",
