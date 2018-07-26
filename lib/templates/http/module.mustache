@@ -43,21 +43,21 @@ function {{{moduleName}}}(options) {
  {{/routeDesc}}
  *
 {{#pathParams}}
- * @param {{openbrace}}{{type}}{{closebrace}} [{{name}}]{{#description}} - {{{description}}}{{/description}}
+ * @param {{openbrace}}{{schema.type}}{{closebrace}} [{{name}}]{{#description}} - {{{description}}}{{/description}}
 {{/pathParams}}
  * @param {Object} options
  * @param {Object} options.data - request body payload in case of PUT|POST|DELETE, query parameters otherwise
  * @param {Object} [options.query]
  {{#queryParams}}
- * @param {{openbrace}}{{type}}{{closebrace}} [options.params.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ * @param {{openbrace}}{{schema.type}}{{closebrace}} [options.params.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/queryParams}}
  * @param {Object} [options.headers]
  {{#headerParams}}
- * @param {{openbrace}}{{type}}{{closebrace}} [options.headers.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ * @param {{openbrace}}{{schema.type}}{{closebrace}} [options.headers.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/headerParams}}
  * @param {Object} options.path
  {{#pathParams}}
- * @param {{openbrace}}{{type}}{{closebrace}} [options.path.{{name}}]{{#description}} - {{{description}}}{{/description}}
+ * @param {{openbrace}}{{schema.type}}{{closebrace}} [options.path.{{name}}]{{#description}} - {{{description}}}{{/description}}
  {{/pathParams}}
  * @return {Promise<Object>}
  */

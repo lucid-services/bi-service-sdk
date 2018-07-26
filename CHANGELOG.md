@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## FUTURE
+
+* [FIXED] - template variables in section of method jsdoc comments referenced incorrect path to schema type (the path has changed with OpenAPI v3)
+
 ## 1.3.0
 
 * [ADDED] - support for `bi-service-doc@2.x` which uses `OpenAPI v3`
