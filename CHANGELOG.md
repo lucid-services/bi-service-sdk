@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## FUTURE
 
 * [FIXED] - template variables in section of method jsdoc comments referenced incorrect path to schema type (the path has changed with OpenAPI v3)
+* [ADDED] - support for building for web (webpack@4 & browserify)
 
 ## 1.3.0
 
