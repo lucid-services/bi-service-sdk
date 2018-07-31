@@ -39,7 +39,7 @@ An alternative way is to use standalone `bi-service-sdk` executable and provide 
 
 ```bash
 # generates SDKs into zip packages in cwd
-> bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0 specs*/}}
+> bi-service-sdk --specs "http://docs.service.com/specs" #url must return json in format {"v1.0": {/*Open API 2.0/3.0 specs*/}}
 
 > # eventually
 > ./node_modules/.bin/bi-service build:sdk --help
