@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## FUTURE
+## 1.4.0
 
 * [FIXED] - template variables in section of method jsdoc comments referenced incorrect path to schema type (the path has changed with OpenAPI v3)
 * [ADDED] - support for building for web (webpack@4 & browserify)
