@@ -640,6 +640,8 @@ const builder = {
                 let specs;
 
                 if (code !== 0) {
+                    console.error(stderr);
+                    console.error(stdout);
                     throw new Error(stderr || stdout);
                 }
 

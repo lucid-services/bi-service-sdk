@@ -12,6 +12,10 @@ config.initialize({fileConfigPath: path.resolve(__dirname + '/config.json5')});
 
 const service = module.exports = new Service(config);
 
+process.on('uncaughtException', function(err) {
+    console.error(err);
+});
+
 service.on('set-up', function() {
     //app1
     this.buildApp('app1', {}).buildRouter({

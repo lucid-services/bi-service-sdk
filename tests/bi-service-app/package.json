@@ -8,8 +8,8 @@
         "bi-service"
     ],
     "dependencies": {
-        "bi-service": "^1.5.1",
-        "bi-service-doc": "^2.0.0"
+        "bi-service": "^1.6.2",
+        "bi-service-doc": "^2.0.4"
     },
     "author": "Bohemia Interactive",
     "private": false
