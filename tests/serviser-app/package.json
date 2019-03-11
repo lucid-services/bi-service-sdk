@@ -1,0 +1,16 @@
+{
+    "name": "test",
+    "version": "1.0.0",
+    "description": "A mock of serviser app used for testing purposes",
+    "main": "index.js",
+    "keywords": [
+        "test",
+        "serviser"
+    ],
+    "dependencies": {
+        "serviser": "^2.0.0",
+        "serviser-doc": "^2.1.2"
+    },
+    "author": "fogine",
+    "private": false
+}

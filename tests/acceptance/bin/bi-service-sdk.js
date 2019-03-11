@@ -13,9 +13,9 @@ var expect = chai.expect;
 chai.use(sinonChai);
 chai.should();
 
-var BI_SERVICE_DOC_EXEC = require.resolve('bi-service-doc/bin/bi-service-doc');
+var SERVICE_DOC_EXEC = require.resolve('serviser-doc/bin/serviser-doc');
 
-describe('bin/bi-service-sdk', function() {
+describe('bin/serviser-sdk', function() {
     before(function(done) {
         var self = this;
 
@@ -28,17 +28,17 @@ describe('bin/bi-service-sdk', function() {
         this.spawn = spawn;
 
 
-        this.sdk1FilePath = `${this.tmpDir.name}/bi-service-app/bi-test-app1-1.0.0.zip`;
-        this.sdk2FilePath = `${this.tmpDir.name}/bi-service-app/bi-test-app2-1.0.0.zip`;
+        this.sdk1FilePath = `${this.tmpDir.name}/serviser-app/test-app1-1.0.0.zip`;
+        this.sdk2FilePath = `${this.tmpDir.name}/serviser-app/test-app2-1.0.0.zip`;
 
-        prepareProjectTestCase(this.tmpDir.name + '/bi-service-app', done);
+        prepareProjectTestCase(this.tmpDir.name + '/serviser-app', done);
 
         function spawn(args) {
-            var cmd = path.normalize(__dirname + '/../../../bin/bi-service-sdk.js');
+            var cmd = path.normalize(__dirname + '/../../../bin/serviser-sdk.js');
             args.unshift(cmd);
 
             var result = childProcess.spawnSync('node', args, {
-                cwd: self.tmpDir.name + '/bi-service-app',
+                cwd: self.tmpDir.name + '/serviser-app',
                 env: { NODE_ENV: 'development' }
             });
 
@@ -50,24 +50,24 @@ describe('bin/bi-service-sdk', function() {
         }
 
         function prepareProjectTestCase(dest, cb) {
-            let appPath = path.resolve(__dirname + '/../../bi-service-app');
+            let appPath = path.resolve(__dirname + '/../../serviser-app');
 
             if (!fs.existsSync(dest)) {
                 fs.mkdirSync(dest);
             }
 
             return Promise.all([
-                fs.readFileAsync(`${appPath}/config.json5`),
+                fs.readFileAsync(`${appPath}/config.js`),
                 fs.readFileAsync(`${appPath}/index.js`),
                 fs.readFileAsync(`${appPath}/package.json`)
             ]).then(function(files) {
                 return Promise.all([
-                    fs.writeFileAsync(`${dest}/config.json5`, files[0]),
+                    fs.writeFileAsync(`${dest}/config.js`, files[0]),
                     fs.writeFileAsync(`${dest}/index.js`, files[1]),
                     fs.writeFileAsync(`${dest}/package.json`, files[2])
                 ]);
             }).then(function() {
-                const result = childProcess.spawnSync('npm', ['install'], {
+                const result = childProcess.spawnSync('npm', ['install', '--scripts-prepend-node-path'], {
                     cwd: dest,
                     env: { NODE_ENV: 'development' }
                 });
@@ -81,7 +81,7 @@ describe('bin/bi-service-sdk', function() {
         }
     });
 
-    it('should dump bi-service-sdk version to stdout and exit with code: 0', function() {
+    it('should dump serviser-sdk version to stdout and exit with code: 0', function() {
         var result = this.spawn(['--version']);
 
         result.status.should.be.equal(0);
@@ -92,14 +92,14 @@ describe('bin/bi-service-sdk', function() {
         before(function() {
             this.result = this.spawn([
                 '--service',
-                path.resolve(this.tmpDir.name + '/bi-service-app'),
+                path.resolve(this.tmpDir.name + '/serviser-app'),
                 '--doc-exec',
-                './node_modules/.bin/bi-service-doc',
+                './node_modules/.bin/serviser-doc',
                 '--tests',
                 true,
                 '--',
                 '--config',
-                path.resolve(this.tmpDir.name + '/bi-service-app/config.json5')
+                path.resolve(this.tmpDir.name + '/serviser-app/config.js')
             ]);
         });
 
@@ -142,16 +142,16 @@ describe('bin/bi-service-sdk', function() {
         it('should not create any SDK packages if dry run is enabled', function() {
             var result = this.spawn([
                 '--service',
-                path.resolve(this.tmpDir.name + '/bi-service-app'),
+                path.resolve(this.tmpDir.name + '/serviser-app'),
                 '--doc-exec',
-                require.resolve('bi-service-doc/bin/bi-service-doc'),
+                require.resolve('serviser-doc/bin/serviser-doc'),
                 '--tests',
                 false,
                 '--dry',
                 true,
                 '--',
                 '--config',
-                path.resolve(this.tmpDir.name + '/bi-service-app/config.json5')
+                path.resolve(this.tmpDir.name + '/serviser-app/config.js')
             ]);
 
             result.status.should.be.equal(0);
@@ -165,9 +165,9 @@ describe('bin/bi-service-sdk', function() {
         it('should NOT remove tmp build directory when the `cleanup` option is set to false', function() {
             var result = this.spawn([
                 '--service',
-                path.resolve(this.tmpDir.name + '/bi-service-app'),
+                path.resolve(this.tmpDir.name + '/serviser-app'),
                 '--doc-exec',
-                require.resolve('bi-service-doc/bin/bi-service-doc'),
+                require.resolve('serviser-doc/bin/serviser-doc'),
                 '--tests',
                 false,
                 '--dry',
@@ -176,7 +176,7 @@ describe('bin/bi-service-sdk', function() {
                 false,
                 '--',
                 '--config',
-                path.resolve(this.tmpDir.name + '/bi-service-app/config.json5')
+                path.resolve(this.tmpDir.name + '/serviser-app/config.js')
             ]);
 
             result.status.should.be.equal(0);

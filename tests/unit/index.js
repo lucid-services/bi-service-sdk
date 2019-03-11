@@ -7,7 +7,7 @@ var axios          = require('axios');
 
 var SDKRequestError = require('../../lib/errors/SDKRequestError.js');
 var sdk             = require('../../index.js');
-var BIServiceSDK    = sdk.BIServiceSDK;
+var ServiceSDK    = sdk.ServiceSDK;
 
 //this makes sinon-as-promised available in sinon:
 require('sinon-as-promised');
@@ -18,30 +18,30 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 chai.should();
 
-describe('BIServiceSDK', function() {
+describe('ServiceSDK', function() {
     describe('constructor', function() {
         it('should throw an Error when `baseURL` option is not set', function() {
             expect(function() {
-                var sdk = new BIServiceSDK({baseURL: undefined});
+                var sdk = new ServiceSDK({baseURL: undefined});
             }).to.throw(Error);
         });
 
         it('should throw an Error when `baseURL` option is not of string type', function() {
             expect(function() {
-                var sdk = new BIServiceSDK({baseURL: {invalid: 'value'}});
+                var sdk = new ServiceSDK({baseURL: {invalid: 'value'}});
             }).to.throw(Error);
         });
 
         it('should throw an Error when `errors` option is not an object', function() {
             expect(function() {
-                var sdk = new BIServiceSDK({
+                var sdk = new ServiceSDK({
                     baseURL: 'http://localhost', errors: 'string'
                 });
             }).to.throw(Error);
         });
 
         it('should accept `query` option and handle it as alias for the `params` option', function() {
-            var sdk = new BIServiceSDK({
+            var sdk = new ServiceSDK({
                 baseURL: 'localhost',
                 query: {foo: 'bar'},
                 params: {bar: 'foo'}
@@ -58,7 +58,7 @@ describe('BIServiceSDK', function() {
         it('should call received function with the axios instance object', function() {
             var spy = sinon.spy();
 
-            var sdk = new BIServiceSDK({
+            var sdk = new ServiceSDK({
                 baseURL: 'http://localhost'
             });
 
@@ -71,7 +71,7 @@ describe('BIServiceSDK', function() {
 
     describe('$request', function() {
         before(function() {
-            this.sdk = new BIServiceSDK({
+            this.sdk = new ServiceSDK({
                 baseURL: 'http://eu.httpbin.org',
                 headers: {Origin: 'localhost'}
             });
@@ -207,7 +207,7 @@ describe('BIServiceSDK', function() {
                 this.internalError = makeError();
                 this.serviceUnavailable = makeError();
 
-                this.sdk = new BIServiceSDK({
+                this.sdk = new ServiceSDK({
                     baseURL: 'http://eu.httpbin.org',
                     errors: {
                         400: this.badRequest,
@@ -289,7 +289,7 @@ describe('BIServiceSDK', function() {
 
     describe('_setReqData', function() {
         before(function() {
-            this.sdk = new BIServiceSDK({
+            this.sdk = new ServiceSDK({
                 baseURL: 'localhost'
             });
         });

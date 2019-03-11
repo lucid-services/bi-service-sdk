@@ -8,18 +8,18 @@ const expect = chai.expect;
 
 chai.should();
 
-describe('bi-service-sdk as a plugin', function() {
+describe('serviser-sdk as a plugin', function() {
     before(function() {
         const self = this;
 
         this.spawn = spawn;
 
-        this.rootPath = path.resolve(__dirname + '/../bi-service-app-2');
-        this.sdk1FilePath = path.resolve(this.rootPath + `/bi-test-app1-1.0.0.zip`);
-        this.sdk2FilePath = path.resolve(this.rootPath + `/bi-test-app2-1.0.0.zip`);
+        this.rootPath = path.resolve(__dirname + '/../serviser-app-2');
+        this.sdk1FilePath = path.resolve(this.rootPath + `/test-app1-1.0.0.zip`);
+        this.sdk2FilePath = path.resolve(this.rootPath + `/test-app2-1.0.0.zip`);
 
         function spawn(args) {
-            const cmd = path.normalize(__dirname + '/../../node_modules/.bin/bi-service');
+            const cmd = path.normalize(__dirname + '/../../node_modules/.bin/serviser');
             args.unshift(cmd);
 
             const result = childProcess.spawnSync('node', args, {
@@ -40,7 +40,7 @@ describe('bi-service-sdk as a plugin', function() {
             this.result = this.spawn([
                 'build:sdk',
                 '--config',
-                path.resolve(this.rootPath + '/config.json5')
+                path.resolve(this.rootPath + '/config.js')
             ]);
         });
 
@@ -88,7 +88,7 @@ describe('bi-service-sdk as a plugin', function() {
                 '--dry',
                 true,
                 '--config',
-                path.resolve(this.rootPath + '/config.json5')
+                path.resolve(this.rootPath + '/config.js')
             ]);
 
             result.status.should.be.equal(0);
@@ -109,7 +109,7 @@ describe('bi-service-sdk as a plugin', function() {
                 '--cleanup',
                 false,
                 '--config',
-                path.resolve(this.rootPath + '/config.json5')
+                path.resolve(this.rootPath + '/config.js')
             ]);
 
             result.status.should.be.equal(0);

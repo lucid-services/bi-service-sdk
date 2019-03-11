@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 1.3.0
 
-* [ADDED] - support for `bi-service-doc@2.x` which uses `OpenAPI v3`
+* [ADDED] - support for `serviser-doc@2.x` which uses `OpenAPI v3`
 
 ## 1.2.4
 
@@ -34,8 +34,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 1.2.0
 
-* [ADDED] - `--specs` option to `bi-service-sdk` executable
-* [ADDED] - make use of bi-service shell API - `build:sdk` command is available via `bi-service` executable
+* [ADDED] - `--specs` option to `serviser-sdk` executable
+* [ADDED] - make use of serviser shell API - `build:sdk` command is available via `serviser` executable
 
 ## 1.1.3
 
@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.5.2
 
-* [FIXED] Infinite loop when an Error occured while loading a bi-service based app
+* [FIXED] Infinite loop when an Error occured while loading a serviser based app
 * [FIXED] sdk constructor name string should be sanitized and non-alphanumberic characters should be replaced by `_`
 * [FIXED] add missing alias option `--help` => `-h`
 
@@ -134,4 +134,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.5.0
 
-* [ADDED] initial implementation (run "bi-service-sdk --help" in your shell for more info)
+* [ADDED] initial implementation (run "serviser-sdk --help" in your shell for more info)

@@ -1,18 +1,18 @@
 {
-    "name": "bi-service-sdk",
+    "name": "serviser-sdk",
     "version": "1.4.0",
-    "description": "Exposes common sdk interface & provides client sdk generator for bi-service based apps",
+    "description": "Exposes common sdk interface & provides client sdk generator for serviser based apps",
     "main": "index.js",
     "browser": "browser.js",
-    "bin": "./bin/bi-service-sdk.js",
+    "bin": "./bin/serviser-sdk.js",
     "scripts": {
         "test": "export NODE_ENV=test; ./node_modules/mocha/bin/_mocha --recursive --ui tdd -t 32000 -R spec tests/acceptance tests/unit",
-        "coverage": "export NODE_ENV=test; istanbul cover -x ./bin/bi-service-sdk.js node_modules/mocha/bin/_mocha -- --recursive --ui tdd -t 16000 -R spec tests/acceptance tests/unit"
+        "coverage": "export NODE_ENV=test; istanbul cover -x ./bin/serviser-sdk.js node_modules/mocha/bin/_mocha -- --recursive --ui tdd -t 16000 -R spec tests/acceptance tests/unit"
     },
     "testFramework": "mocha",
     "keywords": [
         "client",
-        "bi-service",
+        "serviser",
         "service",
         "interface",
         "sdk",
@@ -21,6 +21,10 @@
     "engines": {
         "node": ">=6.4.0"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lucid-services/serviser-sdk"
+    },
     "files": [
         "bin",
         "lib",
@@ -28,7 +32,7 @@
         "browser.js"
     ],
     "license": "GPL-3.0",
-    "author": "Bohemia Interactive",
+    "author": "fogine",
     "private": false,
     "dependencies": {
         "axios": "^0.16.x",
@@ -41,9 +45,9 @@
         "archiver": "^1.3.0"
     },
     "devDependencies": {
-        "bi-service-doc": "^2.0.4",
-        "bi-service": "^1.6.2",
-        "bi-config": "^2.0.0",
+        "serviser-doc": "^2.1.2",
+        "serviser": "^2.0.0",
+        "serviser-config": "^3.0.0",
         "chai": "^4.1.2",
         "chai-as-promised": "^7.1.1",
         "istanbul": "^0.4.3",

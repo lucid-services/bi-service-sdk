@@ -1,4 +1,4 @@
-const BIServiceSDK    = require('./lib/http.js');
+const ServiceSDK      = require('./lib/http.js');
 const SDKRequestError = require('./lib/errors/SDKRequestError.js');
 const SDKInterface    = require('./lib/interface.js');
 const _               = require('lodash');
@@ -6,15 +6,15 @@ const tmp             = require('tmp');
 
 let Service, ServiceDoc, bin;
 
-module.exports                       = BIServiceSDK;
-module.exports.BIServiceSDK          = BIServiceSDK;
-module.exports.BIServiceSDKInterface = SDKInterface;
+module.exports                       = ServiceSDK;
+module.exports.ServiceSDK            = ServiceSDK;
+module.exports.ServiceSDKInterface   = SDKInterface;
 module.exports.SDKRequestError       = SDKRequestError;
 
 try {
-    Service    = require('bi-service');
-    ServiceDoc = require('bi-service-doc');
-    bin        = require('./bin/bi-service-sdk.js');
+    Service    = require('serviser');
+    ServiceDoc = require('serviser-doc');
+    bin        = require('./bin/serviser-sdk.js');
 
 
     Service.once('set-up', function(appManager) {

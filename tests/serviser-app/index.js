@@ -1,14 +1,14 @@
 /**
- * this file represents bi-service based app
- * and its purpose is to help test the bin/bi-service-doc
+ * this file represents serviser based app
+ * and its purpose is to help test the bin/serviser-doc
  * shell executable
  */
 
-const Service = require('bi-service');
-const config  = require('bi-config');
+const Service = require('serviser');
+const config  = require('serviser-config');
 const path    = require('path');
 
-config.initialize({fileConfigPath: path.resolve(__dirname + '/config.json5')});
+config.initialize({fileConfigPath: path.resolve(__dirname + '/config.js')});
 
 const service = module.exports = new Service(config);
 

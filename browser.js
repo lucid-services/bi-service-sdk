@@ -1,8 +1,8 @@
-const BIServiceSDK    = require('./lib/http.js');
+const ServiceSDK      = require('./lib/http.js');
 const SDKRequestError = require('./lib/errors/SDKRequestError.js');
 const SDKInterface    = require('./lib/interface.js');
 
-module.exports                       = BIServiceSDK;
-module.exports.BIServiceSDK          = BIServiceSDK;
-module.exports.BIServiceSDKInterface = SDKInterface;
+module.exports                       = ServiceSDK;
+module.exports.ServiceSDK            = ServiceSDK;
+module.exports.ServiceSDKInterface   = SDKInterface;
 module.exports.SDKRequestError       = SDKRequestError;
