@@ -1,6 +1,6 @@
 {
     "name": "serviser-sdk",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "Exposes common sdk interface & provides client sdk generator for serviser based apps",
     "main": "index.js",
     "browser": "browser.js",
