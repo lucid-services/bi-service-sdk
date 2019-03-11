@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.1
+
+* [FIXED] - renamed project to `serviser-sdk`
+
 ## 1.4.0
 
 * [FIXED] - template variables in section of method jsdoc comments referenced incorrect path to schema type (the path has changed with OpenAPI v3)
