@@ -5,7 +5,7 @@ var sinon          = require('sinon');
 var chai           = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 var sinonChai      = require("sinon-chai");
-var sdkInterface   = require('bi-service-sdk');
+var sdkInterface   = require('serviser-sdk');
 
 var sdk = require('../{{{version}}}.js');
 var moduleIndexJs = require('../index.js');
@@ -52,21 +52,21 @@ describe(context.moduleName, function() {
         });
     }
 
-    it('should export constructor object which inherits from BIServiceSDK interface', function() {
+    it('should export constructor object which inherits from ServiceSDK interface', function() {
         sdk.should.be.instanceof(Function);
-        (this.buildSDK()).should.be.instanceof(sdkInterface.BIServiceSDK);
+        (this.buildSDK()).should.be.instanceof(sdkInterface.ServiceSDK);
     });
 
     it(`should have "version" property equal to ${context.version}`, function() {
         (this.buildSDK()).version.should.be.equal(context.version);
     });
 
-    it('should call parent BIServiceSDK constructor with already prepared `options` object', function() {
+    it('should call parent ServiceSDK constructor with already prepared `options` object', function() {
         //we must test this explicitly this way as spy.calledWith API stores references
         //to the object arguments, thus if a function is called with an object that does NOT
         //contain all required properties (which are then added after the function call),
         //the `calledWith` assertion would have still passed through successfully
-        var sdkInterfaceConstructorStub = sinon.stub(sdkInterface.BIServiceSDK, 'call', function(thisContext, options) {
+        var sdkInterfaceConstructorStub = sinon.stub(sdkInterface.ServiceSDK, 'call', function(thisContext, options) {
             options.should.be.eql({
                 baseURL: context.host + context.basePath
             });

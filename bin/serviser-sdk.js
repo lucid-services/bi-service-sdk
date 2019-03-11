@@ -273,7 +273,7 @@ const builder = {
             'install',
             'mocha',
             'bluebird',
-            'bi-service-sdk',
+            'serviser-sdk',
             'sinon@^1.17.3',
             'chai',
             'chai-as-promised',
@@ -520,8 +520,8 @@ const builder = {
     },
 
     /**
-     * @param {String} sdkInterfaceVersion - npm package version of bi-service-sdk
-     * @param {String} serviceVersion - npm package version of bi-service based app
+     * @param {String} sdkInterfaceVersion - npm package version of serviser-sdk
+     * @param {String} serviceVersion - npm package version of serviser based app
      * @return {String}
      */
     getSDKPackageVersion: function getSDKPackageVersion(sdkInterfaceVersion, serviceVersion) {
@@ -543,7 +543,6 @@ const builder = {
         let version = specsInfo.version;
         let app = specsInfo['x-app'] || specsInfo.title;
         app = app.replace(/[^a-zA-Z0-9_]/gi, '');
-        serviceName = serviceName.replace(/^bi-/, '');
         serviceName = serviceName.toLowerCase();
         serviceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
         version = version.replace(/\./, '_');
@@ -598,9 +597,9 @@ const builder = {
     },
 
     /**
-     * @param {String} projectRoot - dirrectory of bi-service based project
-     * @param {String} executable - filepath to bi-service-doc executable
-     * @param {String} execArgs - shell arguments provided to the bi-service-doc
+     * @param {String} projectRoot - dirrectory of serviser based project
+     * @param {String} executable - filepath to serviser-doc executable
+     * @param {String} execArgs - shell arguments provided to the serviser-doc
      *
      * @throws Error
      * @return {Object}
@@ -620,7 +619,7 @@ const builder = {
 
             if (!~args.indexOf('--config')) {
                 args.push('--config');
-                args.push(projectRoot + '/config/development/config.json5');
+                args.push(projectRoot + '/config/config.js');
             }
 
             var result = childProcess.spawn('node', args);
@@ -640,6 +639,8 @@ const builder = {
                 let specs;
 
                 if (code !== 0) {
+                    console.error(stderr);
+                    console.error(stdout);
                     throw new Error(stderr || stdout);
                 }
 
@@ -663,7 +664,7 @@ module.exports = Object.create(builder);
 if (module.parent === null) {
 
     var argv = yargs
-    .usage('$0 --service [path] --doc-exec [path] -- [bi-service-doc-args]')
+    .usage('$0 --service [path] --doc-exec [path] -- [serviser-doc-args]')
     .option('service', {
         alias: 's',
         describe: 'Filesystem path to root project directory',
@@ -674,8 +675,8 @@ if (module.parent === null) {
     })
     .option('doc-exec', {
         alias: 'e',
-        describe: 'bi-service-doc executable.',
-        default: 'bi-service-doc',
+        describe: 'serviser-doc executable.',
+        default: 'serviser-doc',
         required: true,
         coerce: path.resolve,
         type: 'string'
@@ -713,14 +714,14 @@ if (module.parent === null) {
         type: 'boolean'
     })
     .option('version', {
-        describe: 'Prints bi-service-sdk version',
+        describe: 'Prints serviser-sdk version',
         default: false,
         type: 'boolean'
     })
-    .example('> $0 -s $PROJECTS/bi-depot -- --app public',
+    .example('> $0 -s /path/to/serviser/project -- --app public',
         'Generates client SDK npm package for given app(s)')
-    .example('> $0 --doc-exec ./node_modules/.bin/bi-service-doc',
-        'Generates client SDKs for each exported app of bi-service based project under current working dirrectory')
+    .example('> $0 --doc-exec ./node_modules/.bin/serviser-doc',
+        'Generates client SDKs for each exported app of serviser based project under current working dirrectory')
     .help('h', false).alias('h', 'help').wrap(yargs.terminalWidth()).argv;
 
     if (argv.version) {

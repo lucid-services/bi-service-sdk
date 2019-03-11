@@ -1,6 +1,6 @@
 'use strict';
 
-var SDKInterface = module.require('bi-service-sdk').BIServiceSDKInterface;
+var SDKInterface = module.require('serviser-sdk').ServiceSDKInterface;
 
 var METHODS = {
     subscribe : 'publish',
@@ -16,7 +16,7 @@ module.exports = {{{moduleName}}};
 /**
  * @constructor
  * @param {Object} options
- * @param {Context} options.socket - `Context` connection object - see affiliated `bi-rabbitmq` package
+ * @param {Context} options.socket - `Context` connection object - see affiliated `serviser-rabbitmq` package
  * @param {String} options.baseURL
  * @name {{{moduleName}}}
  */
